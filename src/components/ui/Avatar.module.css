@@ -1,0 +1,59 @@
+.avatar {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 2px inset #d7d7d0;
+  background: #59636b;
+  color: #f2d79c;
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+.small {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+.medium {
+  width: 38px;
+  height: 38px;
+  font-size: 16px;
+}
+.large {
+  width: 110px;
+  height: 110px;
+  font-size: 40px;
+}
+.warrior {
+  position: relative;
+  background: #eef1e9;
+}
+.silhouette {
+  position: absolute;
+  width: 46%;
+  height: 67%;
+  bottom: 5%;
+  background: #070707;
+  clip-path: polygon(
+    43% 0,
+    58% 0,
+    56% 20%,
+    72% 35%,
+    68% 48%,
+    100% 68%,
+    72% 64%,
+    87% 100%,
+    13% 100%,
+    28% 65%,
+    0 70%,
+    32% 47%,
+    27% 37%,
+    44% 20%
+  );
+}
+.stone {
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #56534e, #080808 70%);
+  color: transparent;
+  box-shadow: 1px 2px 2px #776b54;
+}

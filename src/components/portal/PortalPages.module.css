@@ -1,0 +1,366 @@
+.page {
+  min-height: 632px;
+  padding: 7px;
+  background: #cbc6a6;
+}
+.title {
+  display: flex;
+  height: 39px;
+  align-items: center;
+  padding: 0 12px;
+  border: 3px ridge #a67840;
+  background: #dba154;
+}
+.title b {
+  color: #173d72;
+  font-size: 19px;
+  letter-spacing: 3px;
+}
+.title span {
+  margin-left: 18px;
+  color: #60431f;
+}
+.tabs {
+  display: flex;
+  height: 35px;
+  margin-top: 6px;
+  border: 3px ridge #aaa58d;
+  background: #d7d2b7;
+}
+.tabs span,
+.tabs b,
+.tabs a {
+  min-width: 120px;
+  padding: 7px 15px;
+  border-right: 2px groove #ddd;
+  text-align: center;
+}
+.tabs b,
+.tabs .activeTab {
+  background: #18447f;
+  color: white;
+}
+.tablePanel {
+  margin-top: 6px;
+  border: 3px ridge #aaa48a;
+  background: #ebe7cb;
+}
+.tablePanel table {
+  width: 100%;
+  table-layout: fixed;
+}
+.tablePanel th {
+  height: 30px;
+  border: 1px solid #918b74;
+  background: #bbb7a2;
+  color: #34433d;
+}
+.tablePanel td {
+  height: 34px;
+  padding: 3px 6px;
+  border: 1px solid #c0baa0;
+  text-align: center;
+}
+.tablePanel tr:nth-child(even) td {
+  background: #dedac0;
+}
+.tablePanel tr:hover td {
+  background: #d7c08d;
+}
+.tablePanel a {
+  color: #174582;
+  text-decoration: underline;
+}
+.tablePanel .medal {
+  color: #a32a22;
+  font:
+    bold 18px Georgia,
+    serif;
+}
+.footnote {
+  padding: 4px 8px;
+  border: 2px inset #ddd9c0;
+  background: #efebcf;
+  color: #6b6553;
+  font-size: 12px;
+}
+.filters {
+  display: flex;
+  height: 43px;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+  padding: 5px 9px;
+  border: 3px ridge #aaa58d;
+  background: #d8d3b8;
+}
+.filters input,
+.filters select {
+  height: 25px;
+  border: 2px inset #ddd;
+  background: #fffde8;
+}
+.filters button {
+  margin-left: auto;
+  padding: 4px 18px;
+  border: 3px outset #dbe4e7;
+  background: #7192a8;
+  color: white;
+}
+.empty {
+  padding: 50px;
+  color: #746d59;
+  text-align: center;
+}
+
+.recordPage {
+  display: grid;
+  grid-template-columns: minmax(670px, 2fr) minmax(350px, 1fr);
+  height: 100%;
+  min-height: 520px;
+  background: #c79449;
+}
+.recordBoard {
+  border-right: 5px ridge #675846;
+}
+.recordSide {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px;
+  background: #d1c9a7;
+}
+.recordSide .title {
+  height: 42px;
+}
+.recordSide dl {
+  margin: 7px 0;
+  padding: 12px;
+  border: 3px ridge #aaa48a;
+  background: #ece8cd;
+}
+.recordSide dl div {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  padding: 6px;
+  border-bottom: 1px dotted #aaa38b;
+}
+.recordSide dt {
+  text-align: right;
+}
+.recordSide dd {
+  margin: 0;
+  color: #173f78;
+  font-weight: 700;
+}
+.replayControls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  padding: 8px;
+  border: 3px ridge #aaa48a;
+  background: #e9e4ca;
+}
+.replayControls button {
+  padding: 7px;
+  border: 3px outset #dfe5e6;
+  background: #7796a9;
+  color: white;
+}
+.replayControls button:nth-child(3) {
+  grid-column: 1 / -1;
+  background: #1d4f84;
+}
+.recordLinks {
+  display: flex;
+  gap: 7px;
+  margin-top: 8px;
+}
+.recordLinks a {
+  flex: 1;
+  padding: 7px;
+  border: 3px outset #dfe5e6;
+  background: #b4c0c3;
+  color: #173654;
+  text-align: center;
+}
+.recordSide > p {
+  padding: 8px;
+  border: 2px inset #ddd8bd;
+  background: #f2eccb;
+  color: #6a604a;
+  font-size: 12px;
+}
+
+.matchPage {
+  display: grid;
+  min-height: 632px;
+  place-items: center;
+  background: radial-gradient(circle, #e9e5cc, #c8c2a1);
+}
+.matchWindow {
+  width: 520px;
+  border: 4px outset #d5d5cf;
+  background: #d4d0c8;
+  box-shadow: 6px 8px 14px #56492e77;
+}
+.matchWindow > header {
+  height: 35px;
+  padding: 7px 10px;
+  background: linear-gradient(90deg, #061b83, #2b68d2);
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+}
+.matchContent {
+  display: flex;
+  align-items: center;
+  padding: 25px 50px;
+  flex-direction: column;
+}
+.matchStone {
+  display: grid;
+  width: 78px;
+  height: 68px;
+  place-items: center;
+  transform: rotate(-5deg);
+  border: 6px ridge #d19730;
+  border-radius: 44%;
+  background: #d3a038;
+  color: #4b230c;
+  font-size: 31px;
+  box-shadow: 2px 3px 4px #777;
+}
+.matchContent h1 {
+  margin: 14px 0 8px;
+  color: #173e79;
+  font-size: 25px;
+}
+.matchContent p {
+  margin: 3px;
+}
+.matchContent strong {
+  margin-top: 15px;
+  color: #9c2d25;
+  font:
+    22px "Courier New",
+    monospace;
+}
+.matchContent small {
+  margin: 5px 0 12px;
+  color: #716955;
+}
+.matchContent button,
+.matchContent a {
+  width: 220px;
+  margin-top: 8px;
+  padding: 8px;
+  border: 4px outset #dce5e8;
+  background: linear-gradient(#e8eff0, #397fac 58%, #174a77);
+  color: white;
+  text-align: center;
+}
+.matchContent a {
+  background: #b8c3c5;
+  color: #173653;
+}
+
+.infoPage {
+  min-height: 632px;
+  padding: 12px 16%;
+  background: #dcd9c0;
+}
+.infoPage > header {
+  padding: 9px 15px;
+  border: 3px ridge #a47740;
+  background: #dba154;
+  color: #173d72;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+.infoPage section {
+  margin-top: 8px;
+  padding: 14px 20px;
+  border: 3px ridge #aaa58c;
+  background: #eeeacf;
+  line-height: 1.7;
+}
+.infoPage h2 {
+  margin: 0 0 6px;
+  color: #173f78;
+  font-size: 17px;
+}
+.infoPage p {
+  margin: 5px 0;
+}
+.infoPage ul {
+  margin: 5px 0;
+  padding-left: 23px;
+}
+.infoPage a {
+  color: #174582;
+  text-decoration: underline;
+}
+.settingsForm label {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px dotted #aaa38b;
+}
+.settingsForm label span {
+  width: 140px;
+  font-weight: 700;
+}
+.settingsForm select {
+  width: 180px;
+  border: 2px inset #eee;
+  background: white;
+}
+.settingsForm input[type="range"] {
+  width: 180px;
+  accent-color: #174582;
+}
+.settingsForm button {
+  margin: 15px 8px 0 0;
+  padding: 7px 22px;
+  border: 3px outset #dde5e7;
+  background: #6d91a8;
+  color: white;
+}
+.settingsForm output {
+  margin-left: 10px;
+  color: #2f663d;
+}
+.announcementArchive {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.announcementArchive > li {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 2px inset #d8d4b8;
+  background: #e5e1c5;
+}
+.announcementArchive header {
+  display: flex;
+  border-bottom: 1px dotted #99927a;
+  color: #173f78;
+}
+.announcementArchive time {
+  margin-left: auto;
+  color: #756e5a;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+}
+.announcementArchive p,
+.announcementArchive ul {
+  margin: 4px 0 0;
+}
+
+@media (max-width: 1160px) {
+  .recordPage {
+    grid-template-columns: 660px 1fr;
+  }
+}

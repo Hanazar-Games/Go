@@ -1,0 +1,549 @@
+.hall {
+  min-height: 586px;
+  padding: 5px 6px;
+  background-color: #c9c39f;
+  background-image: repeating-linear-gradient(0deg, #fff2 0, #fff2 1px, transparent 1px, transparent 4px);
+}
+.hallTitle {
+  display: flex;
+  height: 32px;
+  align-items: center;
+  padding: 0 10px;
+  border: 3px ridge #a87a42;
+  background: #dca254;
+}
+.hallTitle b {
+  color: #173d72;
+  font-size: 18px;
+  letter-spacing: 3px;
+}
+.hallTitle span {
+  margin-left: 18px;
+  color: #573b1d;
+}
+.hallTitle button {
+  margin-left: auto;
+  padding: 3px 12px;
+  border: 3px outset #e2e4df;
+  background: #b9c6c8;
+}
+.notice {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  margin-top: 5px;
+  padding: 3px 8px;
+  border: 2px inset #dad6b9;
+  background: #fff5bd;
+  color: #52451e;
+}
+.notice b {
+  color: #153f7a;
+}
+.notice button {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  font-weight: 700;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 240px minmax(560px, 1fr) 246px;
+  gap: 6px;
+  margin-top: 6px;
+}
+.playersColumn,
+.roomsColumn,
+.sideColumn {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.playerFilters {
+  display: grid;
+  grid-template-columns: 1fr 78px;
+  gap: 4px;
+  padding: 5px;
+  border-bottom: 2px groove #d7d2b9;
+}
+.playerFilters input,
+.playerFilters select,
+.roomTools select {
+  min-width: 0;
+  height: 25px;
+  border: 2px inset #ddd;
+  background: #fffde8;
+}
+.playersList {
+  height: 282px;
+  overflow-y: auto;
+  background: #e9e5c9;
+}
+.playersList > button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  min-height: 42px;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 5px;
+  border: 0;
+  border-bottom: 1px dotted #a7a086;
+  background: transparent;
+  text-align: left;
+}
+.playersList > button:hover,
+.playersList .selectedPlayer {
+  background: #174080;
+  color: white;
+}
+.playersList span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+.playersList b {
+  overflow: hidden;
+  color: #153e76;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.playersList .selectedPlayer b,
+.playersList button:hover b {
+  color: white;
+}
+.playersList small {
+  opacity: 0.8;
+  font-size: 11px;
+}
+.playersList i {
+  font-size: 11px;
+  font-style: normal;
+  white-space: nowrap;
+}
+.emptyList {
+  padding: 30px 5px;
+  color: #756e5c;
+  text-align: center;
+}
+.status空闲 {
+  color: #27713e;
+}
+.status对局中 {
+  color: #ad2d24;
+}
+.status观战 {
+  color: #86601f;
+}
+.status匹配中 {
+  color: #204e94;
+}
+.status离开 {
+  color: #777;
+}
+
+.playerDetail {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 6px;
+  padding: 7px;
+  border: 3px ridge #aaa58b;
+  background: #e9e5cb;
+}
+.playerDetail > div:nth-child(2) {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  font-size: 12px;
+}
+.playerDetail > div > b {
+  color: #173f78;
+  font-size: 14px;
+}
+.playerActions {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.playerActions a,
+.playerActions button {
+  padding: 4px 2px;
+  border: 2px outset #d7e0e2;
+  background: #7698ae;
+  color: white;
+  text-align: center;
+}
+
+.roomTools {
+  display: flex;
+  height: 35px;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 7px;
+  border-bottom: 2px groove #aaa48d;
+  background: #d9d5bc;
+}
+.roomTools label {
+  white-space: nowrap;
+}
+.roomTools button {
+  padding: 3px 7px;
+  border: 2px outset #ddd;
+  background: #c4ccca;
+}
+.roomTools span {
+  margin-left: auto;
+  color: #6e6653;
+  font-size: 11px;
+}
+.roomTableWrap {
+  height: 275px;
+  overflow: auto;
+  background: #ece8cf;
+}
+.roomTable {
+  width: 100%;
+  min-width: 710px;
+  table-layout: fixed;
+  font-size: 12px;
+}
+.roomTable th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  height: 27px;
+  border: 1px solid #938d77;
+  background: linear-gradient(#d0cdbc 0 45%, #aaa693 46% 100%);
+  color: #39463f;
+}
+.roomTable th:nth-child(1) {
+  width: 58px;
+}
+.roomTable th:nth-child(2),
+.roomTable th:nth-child(3) {
+  width: 118px;
+}
+.roomTable th:nth-child(4) {
+  width: 53px;
+}
+.roomTable th:nth-child(5) {
+  width: 52px;
+}
+.roomTable th:nth-child(6) {
+  width: 115px;
+}
+.roomTable th:nth-child(7) {
+  width: 58px;
+}
+.roomTable th:nth-child(8) {
+  width: 44px;
+}
+.roomTable td {
+  height: 34px;
+  overflow: hidden;
+  padding: 2px 4px;
+  border: 1px solid #c0baa1;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.roomTable .emptyTable {
+  height: 80px;
+  color: #756e5c;
+  text-align: center;
+}
+.roomTable tr:nth-child(even) td {
+  background: #e0dcc1;
+}
+.roomTable tr:hover td,
+.roomTable .selectedRoom td {
+  background: #0a3d91;
+  color: white;
+}
+.roomTable td button {
+  width: 100%;
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  color: #153d75;
+  font-weight: 700;
+}
+.roomTable .selectedRoom td button,
+.roomTable tr:hover td button {
+  color: white;
+}
+.roomTable td small {
+  display: block;
+  color: #775b31;
+  font-size: 10px;
+}
+.roomTable .selectedRoom td small,
+.roomTable tr:hover td small {
+  color: #efe4be;
+}
+.room等待中 {
+  color: #27703d;
+}
+.room对局中 {
+  color: #9a2b24;
+}
+.room已结束 {
+  color: #666;
+}
+
+.roomDetail {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  min-height: 82px;
+  padding: 7px 9px;
+  border: 3px ridge #a9a48b;
+  background: #e8e4c8;
+}
+.roomDetail > div:first-child {
+  display: flex;
+  flex-direction: column;
+}
+.roomDetail > div:first-child b {
+  color: #173f78;
+  font-size: 16px;
+}
+.roomDetail > div:first-child span {
+  margin-top: 4px;
+  color: #6c604a;
+}
+.roomPlayers {
+  display: flex;
+  grid-row: 2;
+  gap: 28px;
+  padding-top: 6px;
+}
+.roomPlayers span:first-child {
+  color: #222;
+}
+.roomPlayers span:last-child {
+  color: #5c5141;
+}
+.roomActions {
+  display: flex;
+  grid-column: 2;
+  grid-row: 1 / 3;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+.roomActions a,
+.roomActions button {
+  min-width: 92px;
+  padding: 5px;
+  border: 3px outset #dbe4e8;
+  background: #608ca9;
+  color: white;
+  text-align: center;
+}
+
+.hallChat {
+  min-height: 76px;
+  border: 3px inset #d9d7c8;
+  background: #ecebd6;
+  font-size: 12px;
+}
+.hallChatMessages {
+  height: 48px;
+  overflow-y: auto;
+  padding: 2px 7px;
+}
+.hallChatMessages p {
+  margin: 1px 0;
+  white-space: nowrap;
+}
+.hallChatMessages b {
+  color: #174782;
+}
+.hallChat form {
+  display: flex;
+  height: 28px;
+  margin-top: 4px;
+  border-top: 1px solid #aaa;
+}
+.hallChat input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  padding: 3px 6px;
+  background: #ffffe8;
+}
+.hallChat form button {
+  width: 60px;
+  border: 2px outset #ddd;
+  background: #bdc9cd;
+}
+
+.matchBox,
+.createBox {
+  padding: 9px;
+  text-align: center;
+}
+.matchBox p,
+.createBox p {
+  margin: 3px 0;
+  color: #625943;
+  font-size: 12px;
+  text-align: left;
+}
+.matchBox button,
+.createBox button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px;
+  border: 4px outset #bed1da;
+  background: linear-gradient(#e5eff1, #347ead 58%, #164a78);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+}
+.matchBox strong,
+.matchBox em {
+  display: block;
+  margin-top: 6px;
+  color: #913027;
+  font-style: normal;
+}
+.matchBox em {
+  color: #173e79;
+  font:
+    20px Georgia,
+    serif;
+}
+.announcements {
+  margin: 0;
+  padding: 5px 8px;
+  list-style: none;
+}
+.announcements li {
+  padding: 5px 0;
+  border-bottom: 1px dotted #a79f84;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.announcements b {
+  color: #922f25;
+}
+.miniRanking {
+  margin: 0;
+  padding: 4px 7px;
+  list-style: none;
+}
+.miniRanking li {
+  display: grid;
+  grid-template-columns: 23px 1fr 28px 42px;
+  min-height: 26px;
+  align-items: center;
+  border-bottom: 1px dotted #aba388;
+}
+.miniRanking i {
+  color: #a02b23;
+  font:
+    bold 14px Georgia,
+    serif;
+}
+.miniRanking b {
+  color: #774022;
+}
+.miniRanking em {
+  color: #6c6654;
+  font:
+    10px Arial,
+    sans-serif;
+}
+
+.modalBackdrop {
+  position: absolute;
+  z-index: 50;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #15202f66;
+}
+.createDialog {
+  width: 480px;
+  border: 4px outset #dad8d1;
+  background: #d4d0c8;
+  box-shadow: 7px 9px 15px #0007;
+}
+.createDialog > header {
+  display: flex;
+  height: 34px;
+  align-items: center;
+  padding-left: 10px;
+  background: linear-gradient(90deg, #061b84, #2867d3);
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+}
+.createDialog > header button {
+  width: 25px;
+  height: 25px;
+  margin-left: auto;
+  margin-right: 4px;
+  padding: 0;
+  border: 2px outset white;
+  background: #d5d2ce;
+  color: #111;
+  font-size: 18px;
+}
+.createDialog fieldset {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px 12px;
+  margin: 12px;
+  border: 2px groove white;
+}
+.createDialog legend {
+  color: #173f78;
+  font-weight: 700;
+}
+.createDialog label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+.createDialog select {
+  width: 110px;
+  border: 2px inset #eee;
+  background: white;
+}
+.checks {
+  display: flex;
+  gap: 30px;
+  padding: 0 22px 12px;
+}
+.checks label {
+  justify-content: flex-start;
+}
+.createDialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 9px 12px;
+  border-top: 2px groove white;
+}
+.createDialog footer button {
+  min-width: 90px;
+  padding: 5px;
+  border: 3px outset #eee;
+  background: #d4d0c8;
+}
+.createDialog footer button:last-child {
+  background: #6c94ac;
+  color: white;
+}
+
+@media (max-width: 1160px) {
+  .layout {
+    grid-template-columns: 220px minmax(540px, 1fr) 230px;
+  }
+}

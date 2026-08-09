@@ -1,0 +1,357 @@
+.game {
+  display: grid;
+  grid-template-columns: minmax(665px, 2fr) minmax(385px, 1fr);
+  height: 100%;
+  min-height: 520px;
+  background: #ca9447;
+}
+.boardPanel {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 5px ridge #665743;
+  background: #d9a145;
+}
+.boardStatus {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  padding: 2px 10px;
+  transform: translateX(-50%);
+  background: #eab45dc8;
+  color: #513411;
+  font-size: 12px;
+}
+.sidebar {
+  display: grid;
+  grid-template-rows: 230px minmax(0, 1fr) auto;
+  gap: 6px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 7px;
+  background: #d5a154;
+}
+.matchCard {
+  border: 4px ridge #a16c32;
+  background: #e5ac57;
+  box-shadow: inset 0 0 22px #bd7f39;
+}
+.matchCard > div:first-child {
+  padding: 10px 12px 2px;
+  color: #543a25;
+}
+.versus {
+  display: grid;
+  grid-template-columns: 1fr 42px 1fr;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+}
+.versus > strong {
+  font:
+    34px Arial,
+    sans-serif;
+  text-align: center;
+}
+.versus article {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+.versus article > b {
+  margin-top: 3px;
+  font-size: 20px;
+  font-weight: 400;
+}
+.versus small {
+  margin-left: 3px;
+  font-size: 12px;
+}
+.blackStone,
+.whiteStone {
+  position: absolute;
+  z-index: 2;
+  left: 1px;
+  top: -9px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 1px 2px 3px #5d421e;
+}
+.blackStone {
+  background: radial-gradient(circle at 35% 30%, #544f48, #070605 70%);
+}
+.whiteStone {
+  border: 1px solid #aba68f;
+  background: radial-gradient(circle at 35% 30%, white, #d6cfb4 70%);
+}
+.winSeal,
+.loseSeal {
+  position: absolute;
+  z-index: 3;
+  right: -5px;
+  bottom: 17px;
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  transform: rotate(-8deg);
+  border: 3px double currentColor;
+  border-radius: 50%;
+  font-size: 24px;
+  opacity: 0.78;
+}
+.winSeal {
+  color: #eee18b;
+}
+.loseSeal {
+  color: #224b9b;
+}
+.clocks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0 14px;
+  border: 2px inset #dcb670;
+  background: #b57634;
+  color: #fff1c3;
+  font:
+    15px "Courier New",
+    monospace;
+}
+.clocks span {
+  padding: 5px;
+  text-align: center;
+}
+
+.messageCard {
+  display: grid;
+  grid-template-rows: 36px minmax(0, 1fr) auto;
+  min-height: 0;
+  border: 3px inset #ccc;
+  background: #ede8c7;
+}
+.messageCard nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 36px;
+  border-bottom: 2px ridge #aaa;
+}
+.messageCard nav button {
+  border: 0;
+  border-right: 2px groove #aaa;
+  background: #d8d4c5;
+  color: #5b5650;
+  font-size: 16px;
+}
+.messageCard nav .activeTab {
+  background: #ece9d5;
+  color: #173c70;
+  font-weight: 700;
+}
+.chatList {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 5px 10px;
+}
+.chatList article {
+  margin-bottom: 4px;
+}
+.chatList time {
+  display: block;
+  color: #776e59;
+  font:
+    11px Arial,
+    sans-serif;
+}
+.chatList p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.18;
+}
+.chatList b {
+  color: #173e86;
+}
+.chatForm {
+  display: flex;
+  height: 31px;
+  border-top: 2px groove #aaa;
+}
+.chatForm input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  padding: 3px 7px;
+  background: #ffffe8;
+}
+.chatForm button {
+  width: 62px;
+  border: 2px outset #ddd;
+  background: #b9c8d3;
+}
+.moves {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 20px;
+  color: #173469;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.moves p {
+  margin: 0;
+  border-bottom: 1px dotted #9d977e;
+}
+
+.gameActions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+.gameActions button,
+.gameActions a {
+  min-height: 36px;
+  padding: 5px;
+  border: 3px outset #acc2d7;
+  background: linear-gradient(#e6f2f7, #247dae 57%, #103f72);
+  color: white;
+  text-align: center;
+  text-shadow: 1px 1px #0c2458;
+}
+
+.resultDialog,
+.privateDialog {
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 3px outset #cac9c5;
+  background: #d4d0c8;
+  box-shadow: 5px 8px 12px #29221585;
+}
+.resultDialog {
+  width: min(610px, 79%);
+}
+.resultDialog > header,
+.privateDialog > header {
+  display: flex;
+  min-height: 35px;
+  align-items: center;
+  padding: 3px 5px 3px 11px;
+  border-bottom: 2px outset #ddd;
+  background: linear-gradient(90deg, #031a83, #154cc8 62%, #2d69d9);
+  color: white;
+  font-size: 17px;
+}
+.resultDialog > header span {
+  flex: 1;
+}
+.resultDialog header button,
+.privateDialog header button {
+  width: 27px;
+  height: 27px;
+  margin-left: auto;
+  padding: 0;
+  border: 2px outset white;
+  background: #d5d2ce;
+  color: #222;
+  font:
+    22px/19px Arial,
+    sans-serif;
+}
+.resultDialog > div {
+  padding: 15px 34px 22px;
+}
+.resultDialog h1 {
+  margin: 0;
+  font-size: 32px;
+  text-align: center;
+  text-shadow: 2px 2px #e8d87f;
+}
+.resultDialog > div > p {
+  margin: 2px 0 8px;
+  font-size: 19px;
+  text-align: center;
+}
+.resultDialog hr {
+  border: 0;
+  border-top: 2px groove #eee;
+}
+.resultDialog section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 55px;
+  padding-top: 12px;
+}
+.resultDialog article {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.resultDialog article > p {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-size: 17px;
+  white-space: nowrap;
+}
+.resultDialog article em {
+  color: #34813e;
+  font-size: 13px;
+  font-style: normal;
+}
+.resultDialog article .loser {
+  color: #a74445;
+}
+.resultDialog article b {
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.privateDialog {
+  width: min(740px, 78%);
+  height: min(500px, calc(100% - 20px));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) 77px;
+}
+.privateMessages {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 25px 40px;
+  border: 4px inset #ddd;
+  background: #c8dcf6;
+  font-size: 18px;
+  line-height: 1.35;
+}
+.privateMessages p {
+  margin: 0 0 15px;
+}
+.privateMessages b {
+  color: #073fbd;
+}
+.privateMessages p:nth-child(2) b {
+  color: green;
+}
+.privateDialog form {
+  display: flex;
+  height: 77px;
+}
+.privateDialog textarea {
+  flex: 1;
+  resize: none;
+  border: 3px inset #eee;
+  background: #e9f2ff;
+}
+.privateDialog form button {
+  width: 76px;
+  border: 3px outset #ddd;
+  background: #b9c9d8;
+}
+
+@media (max-width: 1160px) {
+  .game {
+    grid-template-columns: 660px 1fr;
+  }
+}

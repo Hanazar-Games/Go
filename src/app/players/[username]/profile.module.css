@@ -1,0 +1,142 @@
+.page {
+  position: relative;
+  min-height: 680px;
+  padding: 0 7%;
+  background: radial-gradient(circle at 50% 28%, #f0efe1 0, #dfddc8 58%, #c7c5a8);
+}
+.ribbon {
+  height: 34px;
+  margin: 0 -8%;
+  background: linear-gradient(#d8a15d, #c4843c);
+  color: white;
+  font-size: 19px;
+  line-height: 34px;
+  text-align: center;
+  text-shadow: 1px 1px #97683a;
+}
+.notice {
+  position: absolute;
+  z-index: 3;
+  top: 41px;
+  left: 50%;
+  display: flex;
+  min-width: 300px;
+  padding: 5px 8px;
+  transform: translateX(-50%);
+  border: 2px inset #ddd;
+  background: #fff3b7;
+  color: #59461f;
+}
+.notice button {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+}
+.profile {
+  padding-top: 14px;
+  text-align: center;
+}
+.profile > span {
+  width: 130px;
+  height: 130px;
+  margin: auto;
+}
+.profile h1 {
+  margin: 5px 0 0;
+  color: #102452;
+  font-size: 34px;
+  font-weight: 400;
+}
+.motto {
+  margin: 3px 0 13px;
+  font-size: 15px;
+}
+.profile dl {
+  display: grid;
+  width: 590px;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 30px;
+  margin: auto;
+  font-size: 14px;
+  font-weight: 700;
+}
+.profile dl div {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  margin: 5px 0;
+}
+.profile dt {
+  text-align: right;
+}
+.profile dd {
+  margin: 0;
+  text-align: left;
+}
+.history {
+  display: grid;
+  max-width: 870px;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  margin: 18px auto 0;
+}
+.history h2 {
+  font-size: 17px;
+}
+.history > div {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 11px 16px;
+  border: 3px inset #ddd;
+  background: #e5e7df;
+}
+.history a {
+  flex: 0 0 123px;
+  text-align: center;
+}
+.history a > b,
+.history a > span {
+  display: block;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.miniBoard {
+  position: relative;
+  display: block;
+  width: 118px;
+  height: 103px;
+  margin-bottom: 5px;
+  border: 3px ridge #b17a39;
+  background-color: #dfa956;
+  background-image:
+    linear-gradient(#7d5a2d 1px, transparent 1px), linear-gradient(90deg, #7d5a2d 1px, transparent 1px);
+  background-size: 7px 7px;
+}
+.miniBoard i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #111;
+}
+.miniBoard .whiteDot {
+  border: 1px solid #999;
+  background: white;
+}
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+.actions button,
+.actions a {
+  min-width: 135px;
+  padding: 7px;
+  border: 4px outset #e5ebed;
+  background: linear-gradient(#e9eff1, #91aaba);
+  color: #17314a;
+  font-size: 15px;
+  text-align: center;
+}

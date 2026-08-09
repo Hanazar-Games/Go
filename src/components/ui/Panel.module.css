@@ -1,0 +1,31 @@
+.panel {
+  min-width: 0;
+  border: 3px ridge #aaa68e;
+  background: var(--paper);
+}
+.panel > header {
+  display: flex;
+  height: 30px;
+  align-items: center;
+  padding: 0 8px;
+  border-bottom: 2px groove #d9d4bd;
+  background-color: #173c72;
+  background-image:
+    repeating-linear-gradient(0deg, #ffffff0d 0, #ffffff0d 1px, transparent 1px, transparent 3px),
+    linear-gradient(#3d638a, #173c72);
+  color: #f4efcf;
+  text-shadow: 1px 1px #081e3e;
+}
+.panel h2 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.panel > header > :last-child:not(h2) {
+  margin-left: auto;
+  color: #f5edca;
+  font-size: 12px;
+}
+.body {
+  min-height: 0;
+}
