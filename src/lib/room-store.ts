@@ -1,15 +1,8 @@
 import { initialRooms } from "@/data/mock";
 import type { CreateRoomInput, Room } from "@/types/site";
 
-const roomGlobal = globalThis as typeof globalThis & { __weidaRooms?: Room[] };
-roomGlobal.__weidaRooms ??= structuredClone(initialRooms);
-
-export function getRooms(): Room[] {
-  return structuredClone(roomGlobal.__weidaRooms ?? []);
-}
-
 export function getRoom(id: number): Room | undefined {
-  const room = roomGlobal.__weidaRooms?.find((item) => item.id === id);
+  const room = initialRooms.find((item) => item.id === id);
   return room ? structuredClone(room) : undefined;
 }
 
@@ -35,10 +28,10 @@ export function validateRoomInput(value: unknown): CreateRoomInput {
   };
 }
 
-export function createRoom(value: unknown): Room {
+export function createRoom(value: unknown, rooms: Room[]): Room {
   const input = validateRoomInput(value);
   const room: Room = {
-    id: Math.max(...getRooms().map(({ id }) => id), 2399) + 1,
+    id: Math.max(...rooms.map(({ id }) => id), 2399) + 1,
     host: "访客棋手",
     guest: null,
     hostRank: "9K",
@@ -52,6 +45,5 @@ export function createRoom(value: unknown): Room {
     isPrivate: input.isPrivate,
     allowSpectators: input.allowSpectators,
   };
-  roomGlobal.__weidaRooms?.unshift(room);
   return structuredClone(room);
 }

@@ -2,12 +2,14 @@
 
 参考 2000 年代中文围棋客户端视觉、面向现代浏览器实现的在线围棋社区。
 
-当前版本：`0.3.0` 怀旧体验版。
+当前版本：`0.4.0` GitHub Pages 静态体验版。
 
 ```bash
 npm install
 npm run dev
 ```
+
+在线地址：<https://hanazar-games.github.io/Go/>
 
 - `/`：围棋门户首页、实时统计、热门棋局和排行榜
 - `/hall`：玩家/房间列表、筛选、创建房间和快速匹配
@@ -19,10 +21,14 @@ npm run dev
 
 当前对局为前端体验流程，支持落子、Pass、认输、聊天和 SGF 下载；气、提子、劫、终局数目、账号与实时同步将在后续阶段接入。
 
+GitHub Pages 只托管静态前端。创建房间、匹配和聊天保留为本次浏览的本地体验，不会写入仓库或服务器。后端可在后续独立部署并接入。
+
 ```bash
 npm run lint
 npm run test
 npm run build
 ```
+
+`npm run build` 会将可部署文件输出到 `out/`。推送 `main` 后，GitHub Actions 会自动部署 Pages；仓库 Settings → Pages 的 Source 需选择 **GitHub Actions**。
 
 视觉研究和后续架构见 `REFERENCE_UI_ANALYSIS.md`、`ARCHITECTURE.md`、`IMPLEMENTATION_PLAN.md`。

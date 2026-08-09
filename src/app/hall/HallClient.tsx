@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Panel } from "@/components/ui/Panel";
 import { announcements } from "@/data/mock";
 import { filterPlayers, filterRooms } from "@/lib/filters";
+import { createRoom } from "@/lib/room-store";
 import type { BoardSize, ChatMessage, Player, PlayerStatus, Room, RoomStatus } from "@/types/site";
 import styles from "./hall.module.css";
 
@@ -82,15 +83,13 @@ export function HallClient({
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [createOpen, creating]);
 
-  async function submitRoom(event: FormEvent<HTMLFormElement>) {
+  function submitRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setCreating(true);
     const form = new FormData(event.currentTarget);
     try {
-      const response = await fetch("/api/rooms", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
+      const room = createRoom(
+        {
           boardSize: Number(form.get("boardSize")),
           rules: form.get("rules"),
           komi: Number(form.get("komi")),
@@ -98,22 +97,17 @@ export function HallClient({
           byoyomi: Number(form.get("byoyomi")),
           isPrivate: form.get("isPrivate") === "on",
           allowSpectators: form.get("allowSpectators") === "on",
-        }),
-      });
-      const payload = (await response.json()) as { room?: Room; error?: string };
-      if (!response.ok || !payload.room) {
-        playSound("error");
-        setNotice(payload.error ?? "创建房间失败");
-        return;
-      }
-      setRooms((current) => [payload.room as Room, ...current]);
-      setSelectedRoom(payload.room.id);
+        },
+        rooms,
+      );
+      setRooms((current) => [room, ...current]);
+      setSelectedRoom(room.id);
       setCreateOpen(false);
-      setNotice(`${payload.room.id} 号房间已创建，正在等待对手。`);
+      setNotice(`${room.id} 号本地体验房间已创建；刷新页面后会还原，加入对局将进入演示棋室。`);
       playSound("success");
-    } catch {
+    } catch (error) {
       playSound("error");
-      setNotice("网络连接失败，房间未创建，请稍后重试。");
+      setNotice(error instanceof Error ? error.message : "创建房间失败");
     } finally {
       setCreating(false);
     }
@@ -175,7 +169,14 @@ export function HallClient({
         <span>
           大厅一区　在线 {initialPlayers.length} 人　开放房间 {rooms.length} 间
         </span>
-        <button type="button" onClick={() => router.refresh()}>
+        <button
+          type="button"
+          onClick={() => {
+            setRooms(initialRooms);
+            setSelectedRoom(initialRooms[0]?.id ?? 0);
+            setNotice("房间列表已从静态体验数据刷新。");
+          }}
+        >
           刷新列表
         </button>
       </div>
@@ -328,7 +329,9 @@ export function HallClient({
                       className={room?.id === item.id ? styles.selectedRoom : ""}
                       key={item.id}
                       onDoubleClick={() => {
-                        const href = roomHref(item);
+                        const href = initialRooms.some(({ id }) => id === item.id)
+                          ? roomHref(item)
+                          : "/game/2388";
                         if (href) router.push(href);
                         else setNotice(`${item.id} 号房间未开放观战。`);
                       }}
@@ -387,7 +390,11 @@ export function HallClient({
               </div>
               <div className={styles.roomActions}>
                 {room.status === "等待中" ? (
-                  <Link href={`/game/${room.id}`}>加入对局</Link>
+                  initialRooms.some(({ id }) => id === room.id) ? (
+                    <Link href={`/game/${room.id}`}>加入对局</Link>
+                  ) : (
+                    <Link href="/game/2388">进入演示对局</Link>
+                  )
                 ) : room.status === "已结束" ? (
                   <Link href={`/game-record/${room.id}`}>查看棋谱</Link>
                 ) : !room.allowSpectators ? (

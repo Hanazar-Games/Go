@@ -15,9 +15,9 @@ export const announcements: Announcement[] = [
     date: "08-09",
     version: SITE_VERSION,
     details: [
-      "统一怀旧界面与版本标识",
-      "新增低音量 MIDI 风格背景乐与操作音效",
-      "修复大厅、对局和棋谱回放交互",
+      "完成全站静态导出，可直接部署 GitHub Pages",
+      "适配 /Go 项目子路径和页面刷新访问",
+      "建房、筛选、匹配、音效与对局体验均保留为浏览器本地功能",
     ],
   },
   { type: "系统", text: "服务器将于周一凌晨 03:00 例行维护", date: "08-08" },
@@ -26,6 +26,17 @@ export const announcements: Announcement[] = [
 ];
 
 export const historicalAnnouncements: Announcement[] = [
+  {
+    type: "公告",
+    text: "围达网 0.3.0 怀旧体验版上线",
+    date: "2026-08-09",
+    version: "0.3.0",
+    details: [
+      "统一怀旧界面与版本标识",
+      "新增低音量 MIDI 风格背景乐与操作音效",
+      "修复大厅、对局和棋谱回放交互",
+    ],
+  },
   {
     type: "公告",
     text: "围达网公开测试开始，欢迎棋友提出意见",

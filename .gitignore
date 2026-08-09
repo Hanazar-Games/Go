@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .next/
+out/
 coverage/
 .env*.local
 .DS_Store

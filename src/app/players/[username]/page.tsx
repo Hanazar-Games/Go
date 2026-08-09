@@ -3,6 +3,11 @@ import { players } from "@/data/mock";
 import { PlayerProfile } from "./PlayerProfile";
 
 export const metadata: Metadata = { title: "棋手主页" };
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return players.map(({ username }) => ({ username }));
+}
 
 export default async function PlayerPage({ params }: PageProps<"/players/[username]">) {
   const { username: encoded } = await params;

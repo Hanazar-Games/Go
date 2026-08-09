@@ -9,8 +9,8 @@ describe("release data", () => {
     expect(announcements[0]?.version).toBe(SITE_VERSION);
   });
 
-  it("moves the previous release notice into history", () => {
-    expect(announcements.some(({ text }) => text.includes("公开测试开始"))).toBe(false);
-    expect(historicalAnnouncements.some(({ text }) => text.includes("公开测试开始"))).toBe(true);
+  it("moves previous release notices into history", () => {
+    expect(announcements.some(({ version }) => version === "0.3.0")).toBe(false);
+    expect(historicalAnnouncements.some(({ version }) => version === "0.3.0")).toBe(true);
   });
 });
