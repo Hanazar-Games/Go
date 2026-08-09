@@ -128,6 +128,7 @@
   border: 1px solid #224b2d;
   background: #48a55a;
   box-shadow: inset 1px 1px #9ee4a8;
+  animation: online-blink 1.8s steps(1, end) infinite;
 }
 
 .masthead {
@@ -138,7 +139,19 @@
   height: 86px;
   overflow: hidden;
   border-bottom: 2px solid #a96928;
-  background: #edf2f1;
+  background:
+    repeating-linear-gradient(0deg, #62716f0d 0 1px, transparent 1px 4px),
+    linear-gradient(90deg, #eef3f1, #dce5e3 54%, #edf2ef);
+}
+.masthead::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  background:
+    linear-gradient(90deg, transparent 49.7%, #6b7c7829 50%, transparent 50.3%),
+    linear-gradient(0deg, transparent 49.7%, #6b7c7820 50%, transparent 50.3%);
+  background-size: 24px 24px;
 }
 
 .logo {
@@ -170,6 +183,7 @@
     bold 8px Arial,
     sans-serif;
   letter-spacing: 0;
+  animation: old-badge-blink 2.4s steps(1, end) infinite;
 }
 .logo small {
   font:
@@ -189,6 +203,23 @@
   letter-spacing: 5px;
   text-shadow: 1px 1px #b9c8d2;
   white-space: nowrap;
+}
+.brandText {
+  display: flex;
+  flex-direction: column;
+}
+.brandText b {
+  font-weight: 700;
+}
+.brandText small {
+  margin-top: 5px;
+  color: #526766;
+  font:
+    9px Verdana,
+    Arial,
+    sans-serif;
+  letter-spacing: 2px;
+  text-shadow: none;
 }
 
 .gem {
@@ -260,6 +291,10 @@
 
 .accountBox b {
   color: #183a6b;
+}
+.accountBox small {
+  color: #356c42;
+  font-size: 10px;
 }
 .headerButtons {
   z-index: 3;
@@ -376,6 +411,19 @@
   }
 }
 
+@keyframes online-blink {
+  50% {
+    background: #8cdc94;
+  }
+}
+
+@keyframes old-badge-blink {
+  50% {
+    color: #f4df72;
+    background: #8e2b25;
+  }
+}
+
 .content {
   min-height: 0;
   flex: 1 1 auto;
@@ -474,5 +522,9 @@
   .ticker p {
     animation: none;
     padding-left: 10px;
+  }
+  .connection i,
+  .logo em {
+    animation: none;
   }
 }

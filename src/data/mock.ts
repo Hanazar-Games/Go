@@ -15,9 +15,9 @@ export const announcements: Announcement[] = [
     date: "08-09",
     version: SITE_VERSION,
     details: [
-      "校正对局、观战与棋谱路由，补齐 9、13、19 路棋局资料",
-      "修复棋盘比例、1024 宽度溢出和大厅建房、筛选、私人房提示",
-      "修复键盘音效、音量试听与偏好保存，新增怀旧 404 页面",
+      "加入气、提子、禁自杀、简单劫和中日规则盘面试算",
+      "访客固定执白，新增黑方演示应手、提子统计、演示计时与本地悔棋",
+      "完善连续停着、认输确认和 SGF 元数据，升级 2001 风格顶部画面与状态动效",
     ],
   },
   { type: "系统", text: "服务器将于周一凌晨 03:00 例行维护", date: "08-08" },
@@ -26,6 +26,17 @@ export const announcements: Announcement[] = [
 ];
 
 export const historicalAnnouncements: Announcement[] = [
+  {
+    type: "公告",
+    text: "围达网 0.5.0 全站质量修复版上线",
+    date: "2026-08-09",
+    version: "0.5.0",
+    details: [
+      "校正对局、观战与棋谱路由，补齐 9、13、19 路棋局资料",
+      "修复棋盘比例、1024 宽度溢出和大厅建房、筛选、私人房提示",
+      "修复键盘音效、音量试听与偏好保存，新增怀旧 404 页面",
+    ],
+  },
   {
     type: "公告",
     text: "围达网 0.4.0 GitHub Pages 静态版上线",

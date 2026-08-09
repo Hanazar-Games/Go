@@ -76,12 +76,16 @@ function SiteFrame({ children }: { children: ReactNode }) {
         <span className={`${styles.bamboo} ${styles.bambooLeft}`} aria-hidden="true" />
         <div className={styles.brand}>
           <span className={styles.gem}>棋</span>
-          <b>围棋达人的网上家园</b>
+          <span className={styles.brandText}>
+            <b>围棋达人的网上家园</b>
+            <small>WEIDA ONLINE · 中国围棋网路一区</small>
+          </span>
         </div>
         <span className={`${styles.bamboo} ${styles.bambooRight}`} aria-hidden="true" />
         <div className={styles.accountBox}>
           <span>当前账号：访客棋手</span>
           <b>9K　Rating 1000</b>
+          <small>● 在线　大厅一区</small>
         </div>
         <div className={styles.headerButtons}>
           <Link href="/help">

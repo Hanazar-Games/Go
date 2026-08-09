@@ -15,11 +15,13 @@ export function GoBoard({
   stones,
   size = 19,
   readOnly = false,
+  disabled = false,
   onMove,
 }: {
   stones: Stone[];
   size?: 9 | 13 | 19;
   readOnly?: boolean;
+  disabled?: boolean;
   onMove?: (point: Point) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -116,13 +118,13 @@ export function GoBoard({
       }
     });
 
-    if (!readOnly && hover && !stones.some(({ x, y }) => x === hover.x && y === hover.y)) {
+    if (!readOnly && !disabled && hover && !stones.some(({ x, y }) => x === hover.x && y === hover.y)) {
       context.beginPath();
       context.arc(padX + hover.x * spacing, padY + hover.y * spacing, radius, 0, Math.PI * 2);
       context.fillStyle = "#13131372";
       context.fill();
     }
-  }, [hover, readOnly, size, stones]);
+  }, [disabled, hover, readOnly, size, stones]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -139,7 +141,7 @@ export function GoBoard({
   }
 
   function useKeyboard(event: KeyboardEvent<HTMLCanvasElement>) {
-    if (readOnly) return;
+    if (readOnly || disabled) return;
     const current = hover ?? { x: Math.floor(size / 2), y: Math.floor(size / 2) };
     const direction = {
       ArrowLeft: [-1, 0],
@@ -164,21 +166,25 @@ export function GoBoard({
   return (
     <canvas
       ref={canvasRef}
-      className={readOnly ? styles.readOnly : styles.board}
-      aria-label={`${size}路围棋棋盘${readOnly ? "，观战模式" : "，可落子"}`}
+      className={readOnly ? styles.readOnly : disabled ? styles.disabled : styles.board}
+      aria-label={`${size}路围棋棋盘${readOnly ? "，观战模式" : disabled ? "，等待对手" : "，可落子"}`}
       role={readOnly ? "img" : "button"}
       tabIndex={readOnly ? -1 : 0}
+      aria-disabled={readOnly ? undefined : disabled}
       onFocus={() => {
-        if (!readOnly && !hover) setHover({ x: Math.floor(size / 2), y: Math.floor(size / 2) });
+        if (!readOnly && !disabled && !hover) setHover({ x: Math.floor(size / 2), y: Math.floor(size / 2) });
       }}
       onKeyDown={useKeyboard}
       onMouseMove={(event) => {
-        const point = toPoint(event);
-        setHover(point.x >= 0 && point.x < size && point.y >= 0 && point.y < size ? point : null);
+        if (disabled) setHover(null);
+        else {
+          const point = toPoint(event);
+          setHover(point.x >= 0 && point.x < size && point.y >= 0 && point.y < size ? point : null);
+        }
       }}
       onMouseLeave={() => setHover(null)}
       onClick={(event) => {
-        if (!readOnly) {
+        if (!readOnly && !disabled) {
           const point = toPoint(event);
           if (point.x >= 0 && point.x < size && point.y >= 0 && point.y < size) onMove?.(point);
         }

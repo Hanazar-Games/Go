@@ -18,12 +18,12 @@ export default function AboutPage() {
         <h2>{SITE_VERSION} 怀旧体验版内容</h2>
         <ul>
           <li>围棋门户首页、对弈大厅、房间创建和快速匹配流程</li>
-          <li>Canvas 棋盘、观战、聊天、棋谱回放和 SGF 下载</li>
+          <li>Canvas 棋盘、合法落子、提子、简单劫、盘面试算、观战和 SGF 下载</li>
           <li>棋手主页、Rating 排行和公开棋谱列表</li>
         </ul>
         <p>
-          当前对弈是前端体验流程，尚未实现提子、劫与终局数目。账号、数据库和 WebSocket
-          权威对局将按实施计划逐阶段接入。
+          当前规则由浏览器本地校验，盘面数目属于待确认试算。账号、数据库、死子协商和 WebSocket
+          权威对局将按实施计划逐阶段接入；正式胜负和 Rating 不会由客户端单方面决定。
         </p>
       </section>
       <section>

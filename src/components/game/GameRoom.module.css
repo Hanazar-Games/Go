@@ -15,17 +15,42 @@
 }
 .boardStatus {
   position: absolute;
-  bottom: 5px;
-  left: 50%;
-  padding: 2px 10px;
-  transform: translateX(-50%);
-  background: #eab45dc8;
+  z-index: 4;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: 27px;
+  padding: 3px 10px;
+  border-top: 2px groove #b47f3d;
+  background: #e5b567e8;
   color: #513411;
   font-size: 12px;
 }
+.boardStatus b {
+  font-weight: 400;
+  white-space: nowrap;
+}
+.boardStatus span {
+  min-width: 0;
+  max-width: 55%;
+  overflow: hidden;
+  color: #173e79;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.boardStatus span::before {
+  content: "●";
+  margin-right: 6px;
+  color: #397849;
+}
 .sidebar {
   display: grid;
-  grid-template-rows: 230px minmax(0, 1fr) auto;
+  grid-template-rows: 252px minmax(0, 1fr) auto;
   gap: 6px;
   min-width: 0;
   min-height: 0;
@@ -124,6 +149,34 @@
 .clocks span {
   padding: 5px;
   text-align: center;
+}
+.clocks .activeClock {
+  background: #794b25;
+  color: #fff3a8;
+  animation: clock-pulse 1s steps(1, end) infinite;
+}
+.ruleStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.7fr;
+  margin: 4px 14px 0;
+  border: 1px inset #b08048;
+  background: #ead095;
+  color: #5b3b1c;
+  font-size: 11px;
+  text-align: center;
+}
+.ruleStats span {
+  padding: 2px 3px;
+  border-right: 1px solid #b88b54;
+}
+.ruleStats span:last-child {
+  border-right: 0;
+}
+
+@keyframes clock-pulse {
+  50% {
+    color: #fff;
+  }
 }
 
 .messageCard {
@@ -272,7 +325,8 @@
 }
 .resultDialog > div > p {
   margin: 2px 0 8px;
-  font-size: 19px;
+  font-size: 17px;
+  line-height: 1.35;
   text-align: center;
 }
 .resultDialog hr {
@@ -359,5 +413,11 @@
 @media (max-width: 1040px) {
   .game {
     grid-template-columns: 600px 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clocks .activeClock {
+    animation: none;
   }
 }
