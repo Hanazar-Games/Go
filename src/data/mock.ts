@@ -15,9 +15,9 @@ export const announcements: Announcement[] = [
     date: "08-09",
     version: SITE_VERSION,
     details: [
-      "完成全站静态导出，可直接部署 GitHub Pages",
-      "适配 /Go 项目子路径和页面刷新访问",
-      "建房、筛选、匹配、音效与对局体验均保留为浏览器本地功能",
+      "校正对局、观战与棋谱路由，补齐 9、13、19 路棋局资料",
+      "修复棋盘比例、1024 宽度溢出和大厅建房、筛选、私人房提示",
+      "修复键盘音效、音量试听与偏好保存，新增怀旧 404 页面",
     ],
   },
   { type: "系统", text: "服务器将于周一凌晨 03:00 例行维护", date: "08-08" },
@@ -26,6 +26,17 @@ export const announcements: Announcement[] = [
 ];
 
 export const historicalAnnouncements: Announcement[] = [
+  {
+    type: "公告",
+    text: "围达网 0.4.0 GitHub Pages 静态版上线",
+    date: "2026-08-09",
+    version: "0.4.0",
+    details: [
+      "完成全站静态导出，可直接部署 GitHub Pages",
+      "适配 /Go 项目子路径和页面刷新访问",
+      "建房、筛选、匹配、音效与对局体验均保留为浏览器本地功能",
+    ],
+  },
   {
     type: "公告",
     text: "围达网 0.3.0 怀旧体验版上线",

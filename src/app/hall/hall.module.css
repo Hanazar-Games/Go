@@ -547,3 +547,9 @@
     grid-template-columns: 220px minmax(540px, 1fr) 230px;
   }
 }
+
+@media (max-width: 1040px) {
+  .layout {
+    grid-template-columns: 205px minmax(500px, 1fr) 215px;
+  }
+}

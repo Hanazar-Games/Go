@@ -2,7 +2,7 @@
   position: relative;
   display: flex;
   width: min(1240px, calc(100vw - 24px));
-  min-width: 1076px;
+  min-width: 976px;
   height: min(876px, calc(100vh - 24px));
   min-height: 720px;
   flex-direction: column;
@@ -457,6 +457,16 @@
   }
   .portalNav a {
     min-width: 104px;
+  }
+}
+
+@media (max-width: 1040px) {
+  .brand {
+    margin-left: 40px;
+    font-size: 20px;
+  }
+  .statusBar span:nth-of-type(6) {
+    display: none;
   }
 }
 

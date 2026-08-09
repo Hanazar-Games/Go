@@ -5,11 +5,16 @@ import { useEffect, useMemo, useState } from "react";
 import { GoBoard } from "@/components/game/GoBoard";
 import { usePreferences } from "@/components/preferences/PreferencesProvider";
 import { createEndgameStones } from "@/data/mock";
+import type { GameSummary, Room } from "@/types/site";
 import styles from "@/components/portal/PortalPages.module.css";
 
-export function RecordReplay({ id }: { id: string }) {
+export function RecordReplay({ id, game, room }: { id: string; game?: GameSummary; room?: Room }) {
   const { playSound } = usePreferences();
-  const allMoves = useMemo(() => createEndgameStones(), []);
+  const boardSize = game?.boardSize ?? room?.boardSize ?? 19;
+  const allMoves = useMemo(
+    () => createEndgameStones().filter(({ x, y }) => x < boardSize && y < boardSize),
+    [boardSize],
+  );
   const [move, setMove] = useState(allMoves.length);
   const [playing, setPlaying] = useState(false);
   useEffect(() => {
@@ -27,6 +32,7 @@ export function RecordReplay({ id }: { id: string }) {
       <section className={styles.recordBoard}>
         <GoBoard
           stones={allMoves.slice(0, move).map((stone, index) => ({ ...stone, last: index === move - 1 }))}
+          size={boardSize}
           readOnly
         />
       </section>
@@ -38,19 +44,23 @@ export function RecordReplay({ id }: { id: string }) {
         <dl>
           <div>
             <dt>黑方：</dt>
-            <dd>俞晓旸（9P）</dd>
+            <dd>
+              {game?.black ?? room?.host ?? "未知棋手"}（{game?.blackRank ?? room?.hostRank ?? "—"}）
+            </dd>
           </div>
           <div>
             <dt>白方：</dt>
-            <dd>褚赢（9D）</dd>
+            <dd>
+              {game?.white ?? room?.guest ?? "未知棋手"}（{game?.whiteRank ?? room?.guestRank ?? "—"}）
+            </dd>
           </div>
           <div>
             <dt>结果：</dt>
-            <dd>白中盘胜</dd>
+            <dd>{game?.result ?? "已结束"}</dd>
           </div>
           <div>
             <dt>规则：</dt>
-            <dd>中国规则 / 黑贴7.5目</dd>
+            <dd>{room ? `${room.rules} / 黑贴${room.komi}目` : `${boardSize}路体验棋谱`}</dd>
           </div>
           <div>
             <dt>当前：</dt>
@@ -116,7 +126,7 @@ export function RecordReplay({ id }: { id: string }) {
           </button>
         </div>
         <div className={styles.recordLinks}>
-          <Link href={`/watch/${id}`}>进入观战页</Link>
+          <Link href="/hall">返回对弈大厅</Link>
           <Link href="/games">返回棋谱大厅</Link>
         </div>
         <p>变化图与 KataGo 分析接口已在架构中预留，将在后续阶段接入。</p>

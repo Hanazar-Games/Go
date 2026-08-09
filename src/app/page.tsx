@@ -62,7 +62,17 @@ export default function HomePage() {
                       {player.rank} / {player.rating}
                     </small>
                   </Link>
-                  <i className={styles.statusFree}>{player.status}</i>
+                  <i
+                    className={
+                      player.status === "空闲"
+                        ? styles.statusFree
+                        : player.status === "对局中"
+                          ? styles.statusPlaying
+                          : styles.statusWatching
+                    }
+                  >
+                    {player.status}
+                  </i>
                 </li>
               ))}
             </ul>

@@ -355,3 +355,9 @@
     grid-template-columns: 660px 1fr;
   }
 }
+
+@media (max-width: 1040px) {
+  .game {
+    grid-template-columns: 600px 1fr;
+  }
+}

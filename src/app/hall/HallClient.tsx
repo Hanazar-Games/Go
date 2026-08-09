@@ -8,18 +8,19 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Panel } from "@/components/ui/Panel";
 import { announcements } from "@/data/mock";
 import { filterPlayers, filterRooms } from "@/lib/filters";
+import { MATCH_DEMO_ID } from "@/lib/game-data";
 import { createRoom } from "@/lib/room-store";
 import type { BoardSize, ChatMessage, Player, PlayerStatus, Room, RoomStatus } from "@/types/site";
 import styles from "./hall.module.css";
 
-const playerStatuses: Array<PlayerStatus | "全部"> = ["全部", "空闲", "对局中", "观战", "匹配中"];
+const playerStatuses: Array<PlayerStatus | "全部"> = ["全部", "空闲", "对局中", "观战", "匹配中", "离开"];
 const initialHallMessages: ChatMessage[] = [
   { time: "11:52:13", name: "系统", text: "欢迎进入围达对弈大厅，请文明交流。", system: true },
   { time: "11:52:20", name: "周慢慢", text: "有没有 5K 左右的棋友下一盘？" },
 ];
 
 function roomHref(room: Room) {
-  if (room.status === "等待中") return `/game/${room.id}`;
+  if (room.status === "等待中") return room.isPrivate ? null : `/game/${room.id}`;
   if (room.status === "已结束") return `/game-record/${room.id}`;
   if (!room.allowSpectators) return null;
   return `/watch/${room.id}`;
@@ -60,14 +61,14 @@ export function HallClient({
   const room = visibleRooms.find(({ id }) => id === selectedRoom) ?? visibleRooms[0];
   const displayedNotice =
     matchSeconds !== null && matchSeconds >= 5
-      ? "匹配成功：若无一切心（2D），正在进入 2388 号对局室……"
+      ? `匹配成功：若无一切心（2D），正在进入 ${MATCH_DEMO_ID} 号对局室……`
       : notice;
 
   useEffect(() => {
     if (matchSeconds === null) return;
     if (matchSeconds >= 5) {
       if (matchSeconds === 5) playSound("success");
-      const redirect = window.setTimeout(() => router.push("/game/2388"), 900);
+      const redirect = window.setTimeout(() => router.push(`/game/${MATCH_DEMO_ID}`), 900);
       return () => window.clearTimeout(redirect);
     }
     const timer = window.setTimeout(() => setMatchSeconds((value) => (value ?? 0) + 1), 1000);
@@ -102,6 +103,8 @@ export function HallClient({
       );
       setRooms((current) => [room, ...current]);
       setSelectedRoom(room.id);
+      setRoomStatus("全部");
+      setBoardSize("全部");
       setCreateOpen(false);
       setNotice(`${room.id} 号本地体验房间已创建；刷新页面后会还原，加入对局将进入演示棋室。`);
       playSound("success");
@@ -331,8 +334,10 @@ export function HallClient({
                       onDoubleClick={() => {
                         const href = initialRooms.some(({ id }) => id === item.id)
                           ? roomHref(item)
-                          : "/game/2388";
+                          : `/game/${MATCH_DEMO_ID}`;
                         if (href) router.push(href);
+                        else if (item.isPrivate)
+                          setNotice(`${item.id} 号为私人房间，密码验证将在账号服务接入后开放。`);
                         else setNotice(`${item.id} 号房间未开放观战。`);
                       }}
                     >
@@ -390,10 +395,14 @@ export function HallClient({
               </div>
               <div className={styles.roomActions}>
                 {room.status === "等待中" ? (
-                  initialRooms.some(({ id }) => id === room.id) ? (
+                  room.isPrivate ? (
+                    <button type="button" disabled title="账号与密码服务接入后开放">
+                      私人房间
+                    </button>
+                  ) : initialRooms.some(({ id }) => id === room.id) ? (
                     <Link href={`/game/${room.id}`}>加入对局</Link>
                   ) : (
-                    <Link href="/game/2388">进入演示对局</Link>
+                    <Link href={`/game/${MATCH_DEMO_ID}`}>进入演示对局</Link>
                   )
                 ) : room.status === "已结束" ? (
                   <Link href={`/game-record/${room.id}`}>查看棋谱</Link>
@@ -511,7 +520,7 @@ export function HallClient({
           >
             <header>
               <span id="create-room-title">创建新的对局室</span>
-              <button type="button" onClick={() => setCreateOpen(false)}>
+              <button type="button" onClick={() => setCreateOpen(false)} aria-label="关闭创建房间">
                 ×
               </button>
             </header>

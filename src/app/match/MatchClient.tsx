@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePreferences } from "@/components/preferences/PreferencesProvider";
+import { MATCH_DEMO_ID } from "@/lib/game-data";
 import styles from "@/components/portal/PortalPages.module.css";
 
 export function MatchClient() {
@@ -16,7 +17,7 @@ export function MatchClient() {
     if (!searching) return;
     if (seconds >= 5) {
       if (seconds === 5) playSound("success");
-      const redirect = window.setTimeout(() => router.push("/game/2388"), 800);
+      const redirect = window.setTimeout(() => router.push(`/game/${MATCH_DEMO_ID}`), 800);
       return () => window.clearTimeout(redirect);
     }
     const timer = window.setTimeout(() => setSeconds((value) => value + 1), 1000);

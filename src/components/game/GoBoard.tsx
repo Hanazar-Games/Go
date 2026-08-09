@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, MouseEvent } from "react";
+import { getBoardGeometry, getBoardPoint } from "@/lib/board";
 import type { Stone } from "@/types/site";
 import styles from "./GoBoard.module.css";
 
@@ -37,10 +38,7 @@ export function GoBoard({
 
     const width = rect.width;
     const height = rect.height;
-    const padX = 35;
-    const padY = 36;
-    const dx = (width - padX * 2) / (size - 1);
-    const dy = (height - padY * 2) / (size - 1);
+    const { padX, padY, spacing } = getBoardGeometry(width, height, size);
     const wood = context.createLinearGradient(0, 0, width, height);
     wood.addColorStop(0, "#d69b42");
     wood.addColorStop(0.5, "#eab157");
@@ -57,12 +55,12 @@ export function GoBoard({
     context.lineWidth = 1.3;
     for (let index = 0; index < size; index += 1) {
       context.beginPath();
-      context.moveTo(padX + index * dx, padY);
-      context.lineTo(padX + index * dx, height - padY);
+      context.moveTo(padX + index * spacing, padY);
+      context.lineTo(padX + index * spacing, padY + (size - 1) * spacing);
       context.stroke();
       context.beginPath();
-      context.moveTo(padX, padY + index * dy);
-      context.lineTo(width - padX, padY + index * dy);
+      context.moveTo(padX, padY + index * spacing);
+      context.lineTo(padX + (size - 1) * spacing, padY + index * spacing);
       context.stroke();
     }
 
@@ -70,23 +68,25 @@ export function GoBoard({
     context.font = "15px SimSun, serif";
     context.textAlign = "center";
     const letters = "ABCDEFGHJKLMNOPQRST";
-    [...letters.slice(0, size)].forEach((letter, index) => context.fillText(letter, padX + index * dx, 21));
+    [...letters.slice(0, size)].forEach((letter, index) =>
+      context.fillText(letter, padX + index * spacing, Math.max(16, padY - 15)),
+    );
     for (let index = 0; index < size; index += 1)
-      context.fillText(String(index + 1), 12, padY + index * dy + 5);
+      context.fillText(String(index + 1), Math.max(12, padX - 21), padY + index * spacing + 5);
 
     const starIndexes = size === 19 ? [3, 9, 15] : size === 13 ? [3, 6, 9] : [2, 4, 6];
     starIndexes.forEach((x) =>
       starIndexes.forEach((y) => {
         context.beginPath();
-        context.arc(padX + x * dx, padY + y * dy, 3.1, 0, Math.PI * 2);
+        context.arc(padX + x * spacing, padY + y * spacing, 3.1, 0, Math.PI * 2);
         context.fill();
       }),
     );
 
-    const radius = Math.min(dx, dy) * 0.47;
+    const radius = spacing * 0.47;
     stones.forEach((stone) => {
-      const cx = padX + stone.x * dx;
-      const cy = padY + stone.y * dy;
+      const cx = padX + stone.x * spacing;
+      const cy = padY + stone.y * spacing;
       const gradient = context.createRadialGradient(cx - radius * 0.35, cy - radius * 0.4, 1, cx, cy, radius);
       if (stone.color === "black") {
         gradient.addColorStop(0, "#57534c");
@@ -118,7 +118,7 @@ export function GoBoard({
 
     if (!readOnly && hover && !stones.some(({ x, y }) => x === hover.x && y === hover.y)) {
       context.beginPath();
-      context.arc(padX + hover.x * dx, padY + hover.y * dy, radius, 0, Math.PI * 2);
+      context.arc(padX + hover.x * spacing, padY + hover.y * spacing, radius, 0, Math.PI * 2);
       context.fillStyle = "#13131372";
       context.fill();
     }
@@ -135,10 +135,7 @@ export function GoBoard({
 
   function toPoint(event: MouseEvent<HTMLCanvasElement>): Point {
     const rect = event.currentTarget.getBoundingClientRect();
-    return {
-      x: Math.round((event.clientX - rect.left - 35) / ((rect.width - 70) / (size - 1))),
-      y: Math.round((event.clientY - rect.top - 36) / ((rect.height - 72) / (size - 1))),
-    };
+    return getBoardPoint(event.clientX - rect.left, event.clientY - rect.top, rect.width, rect.height, size);
   }
 
   function useKeyboard(event: KeyboardEvent<HTMLCanvasElement>) {

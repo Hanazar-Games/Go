@@ -117,9 +117,17 @@
     sans-serif;
 }
 .playerList i {
-  color: #2f663d;
   font-size: 11px;
   font-style: normal;
+}
+.statusFree {
+  color: #2f663d;
+}
+.statusPlaying {
+  color: #9a2b24;
+}
+.statusWatching {
+  color: #80601f;
 }
 .moreLink {
   display: block;

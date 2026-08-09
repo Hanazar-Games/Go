@@ -33,21 +33,34 @@ function coordinate(move: GameMove) {
   return `${"ABCDEFGHJKLMNOPQRST"[move.x] ?? "?"}${move.y + 1}`;
 }
 
-function startingPosition(size: BoardSize, waiting: boolean) {
-  if (waiting) return [];
+function startingPosition(size: BoardSize, fresh: boolean) {
+  if (fresh) {
+    const center = Math.floor(size / 2);
+    return [{ x: center, y: center, color: "black", last: true } satisfies Stone];
+  }
   return createEndgameStones().filter(({ x, y }) => x < size && y < size);
 }
 
-export function GameRoom({ id, room, spectator = false }: { id: string; room?: Room; spectator?: boolean }) {
+export function GameRoom({
+  id,
+  room,
+  spectator = false,
+  fresh = false,
+}: {
+  id: string;
+  room?: Room;
+  spectator?: boolean;
+  fresh?: boolean;
+}) {
   const boardSize = room?.boardSize ?? 19;
   const finished = room?.status === "已结束" || id === "2371";
   const waiting = room?.status === "等待中";
   const { playSound } = usePreferences();
-  const [stones, setStones] = useState<Stone[]>(() => startingPosition(boardSize, waiting));
+  const [stones, setStones] = useState<Stone[]>(() => startingPosition(boardSize, fresh));
   const [moves, setMoves] = useState<GameMove[]>(() =>
-    startingPosition(boardSize, waiting).map(({ x, y, color }) => ({ x, y, color })),
+    startingPosition(boardSize, fresh).map(({ x, y, color }) => ({ x, y, color })),
   );
-  const [nextColor, setNextColor] = useState<"black" | "white">("black");
+  const [nextColor, setNextColor] = useState<"black" | "white">(fresh ? "white" : "black");
   const [gameOver, setGameOver] = useState(finished);
   const [resultOpen, setResultOpen] = useState(finished);
   const [tab, setTab] = useState<"moves" | "chat">("chat");
@@ -58,7 +71,7 @@ export function GameRoom({ id, room, spectator = false }: { id: string; room?: R
   const [winnerColor, setWinnerColor] = useState<"black" | "white">("white");
 
   const blackName = room?.host ?? "俞晓旸";
-  const whiteName = room?.guest ?? (waiting ? "等待对手" : "褚赢");
+  const whiteName = room?.guest ?? (waiting && fresh ? "访客棋手" : waiting ? "等待对手" : "褚赢");
   const blackRecord = players.find(({ username }) => username === blackName);
   const whiteRecord = players.find(({ username }) => username === whiteName);
   const blackPlayer = {
@@ -77,7 +90,7 @@ export function GameRoom({ id, room, spectator = false }: { id: string; room?: R
   };
   const winner = winnerColor === "black" ? blackPlayer : whitePlayer;
   const loser = winnerColor === "black" ? whitePlayer : blackPlayer;
-  const opponentName = id === "2371" ? blackName : (room?.guest ?? room?.host ?? "俞晓旸");
+  const opponentName = id === "2371" || (waiting && fresh) ? blackName : (room?.guest ?? room?.host ?? "俞晓旸");
 
   useEffect(() => {
     if (!resultOpen && !privateOpen) return;

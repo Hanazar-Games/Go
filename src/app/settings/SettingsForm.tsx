@@ -5,7 +5,7 @@ import { usePreferences } from "@/components/preferences/PreferencesProvider";
 import styles from "@/components/portal/PortalPages.module.css";
 
 export function SettingsForm() {
-  const { preferences, savePreferences, playSound } = usePreferences();
+  const { preferences, savePreferences, playSound, previewSound } = usePreferences();
   const [draft, setDraft] = useState(preferences);
   const [saved, setSaved] = useState(false);
 
@@ -144,7 +144,13 @@ export function SettingsForm() {
             />
             允许陌生人挑战（本机偏好，账号接入后同步）
           </label>
-          <button type="button" onClick={() => playSound("message")}>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              previewSound("message", draft.audio.volume);
+            }}
+          >
             试听提示音
           </button>
           <button type="submit">保存设置</button>

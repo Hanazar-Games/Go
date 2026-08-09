@@ -26,21 +26,27 @@ class AudioEngine {
     this.volume = volume / 100;
   }
 
-  private tone(frequency: number, duration: number, level: number, wave: OscillatorType = "square") {
+  private tone(
+    frequency: number,
+    duration: number,
+    level: number,
+    wave: OscillatorType = "square",
+    volume = this.volume,
+  ) {
     if (!this.context || this.context.state === "closed") return;
     const oscillator = this.context.createOscillator();
     const gain = this.context.createGain();
     const now = this.context.currentTime;
     oscillator.type = wave;
     oscillator.frequency.setValueAtTime(frequency, now);
-    gain.gain.setValueAtTime(Math.max(0.0001, level * this.volume), now);
+    gain.gain.setValueAtTime(Math.max(0.0001, level * volume), now);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
     oscillator.connect(gain).connect(this.context.destination);
     oscillator.start(now);
     oscillator.stop(now + duration);
   }
 
-  private clack() {
+  private clack(volume = this.volume) {
     if (!this.context || this.context.state === "closed") return;
     const duration = 0.045;
     const samples = Math.floor(this.context.sampleRate * duration);
@@ -56,28 +62,28 @@ class AudioEngine {
     filter.type = "bandpass";
     filter.frequency.value = 1150;
     filter.Q.value = 0.8;
-    gain.gain.value = 0.42 * this.volume;
+    gain.gain.value = 0.42 * volume;
     source.connect(filter).connect(gain).connect(this.context.destination);
     source.start();
   }
 
-  play(effect: SoundEffect) {
+  play(effect: SoundEffect, volume = this.volume) {
     if (!this.context || this.context.state === "closed") return;
     if (effect === "stone") {
-      this.clack();
+      this.clack(volume);
       return;
     }
-    if (effect === "button") this.tone(720, 0.035, 0.055);
+    if (effect === "button") this.tone(720, 0.035, 0.055, "square", volume);
     if (effect === "message") {
-      this.tone(540, 0.09, 0.09, "sine");
-      window.setTimeout(() => this.tone(680, 0.11, 0.08, "sine"), 70);
+      this.tone(540, 0.09, 0.09, "sine", volume);
+      window.setTimeout(() => this.tone(680, 0.11, 0.08, "sine", volume), 70);
     }
     if (effect === "success") {
       [440, 554, 659].forEach((frequency, index) =>
-        window.setTimeout(() => this.tone(frequency, 0.18, 0.1, "triangle"), index * 105),
+        window.setTimeout(() => this.tone(frequency, 0.18, 0.1, "triangle", volume), index * 105),
       );
     }
-    if (effect === "error") this.tone(145, 0.18, 0.12, "sawtooth");
+    if (effect === "error") this.tone(145, 0.18, 0.12, "sawtooth", volume);
   }
 
   startBgm() {
@@ -108,6 +114,7 @@ interface PreferencesContextValue {
   preferences: SitePreferences;
   savePreferences: (next: SitePreferences) => void;
   playSound: (effect: SoundEffect) => void;
+  previewSound: (effect: SoundEffect, volume: number) => void;
 }
 
 const PreferencesContext = createContext<PreferencesContextValue | null>(null);
@@ -142,16 +149,8 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       if (!(event.target instanceof Element) || !event.target.closest("a, button, [role='button']")) return;
       if (preferencesRef.current.audio.interfaceSound) audio.play("button");
     };
-    const key = (event: KeyboardEvent) => {
+    const key = () => {
       activate();
-      if (
-        (event.key === "Enter" || event.key === " ") &&
-        event.target instanceof Element &&
-        event.target.closest("a, button, [role='button']") &&
-        preferencesRef.current.audio.interfaceSound
-      ) {
-        audio.play("button");
-      }
     };
     const visibility = () => {
       if (document.hidden) audio.stopBgm();
@@ -198,8 +197,17 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     audioRef.current?.play(effect);
   }, []);
 
+  const previewSound = useCallback((effect: SoundEffect, volume: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.activate();
+    audio.play(effect, Math.min(100, Math.max(0, volume)) / 100);
+  }, []);
+
   return (
-    <PreferencesContext value={{ preferences, savePreferences, playSound }}>{children}</PreferencesContext>
+    <PreferencesContext value={{ preferences, savePreferences, playSound, previewSound }}>
+      {children}
+    </PreferencesContext>
   );
 }
 
