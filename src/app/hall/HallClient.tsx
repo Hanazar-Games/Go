@@ -9,6 +9,7 @@ import { Panel } from "@/components/ui/Panel";
 import { announcements } from "@/data/mock";
 import { filterPlayers, filterRooms } from "@/lib/filters";
 import { MATCH_DEMO_ID } from "@/lib/game-data";
+import { buildLocalGameHref } from "@/lib/local-game";
 import { createRoom } from "@/lib/room-store";
 import type { BoardSize, ChatMessage, Player, PlayerStatus, Room, RoomStatus } from "@/types/site";
 import styles from "./hall.module.css";
@@ -106,7 +107,7 @@ export function HallClient({
       setRoomStatus("全部");
       setBoardSize("全部");
       setCreateOpen(false);
-      setNotice(`${room.id} 号本地体验房间已创建；刷新页面后会还原，加入对局将进入演示棋室。`);
+      setNotice(`${room.id} 号本地体验房间已创建；房主执黑，刷新大厅后房间记录会还原。`);
       playSound("success");
     } catch (error) {
       playSound("error");
@@ -334,7 +335,7 @@ export function HallClient({
                       onDoubleClick={() => {
                         const href = initialRooms.some(({ id }) => id === item.id)
                           ? roomHref(item)
-                          : `/game/${MATCH_DEMO_ID}`;
+                          : buildLocalGameHref(item);
                         if (href) router.push(href);
                         else if (item.isPrivate)
                           setNotice(`${item.id} 号为私人房间，密码验证将在账号服务接入后开放。`);
@@ -395,14 +396,14 @@ export function HallClient({
               </div>
               <div className={styles.roomActions}>
                 {room.status === "等待中" ? (
-                  room.isPrivate ? (
+                  !initialRooms.some(({ id }) => id === room.id) ? (
+                    <Link href={buildLocalGameHref(room)}>以黑方开始对局</Link>
+                  ) : room.isPrivate ? (
                     <button type="button" disabled title="账号与密码服务接入后开放">
                       私人房间
                     </button>
-                  ) : initialRooms.some(({ id }) => id === room.id) ? (
-                    <Link href={`/game/${room.id}`}>加入对局</Link>
                   ) : (
-                    <Link href={`/game/${MATCH_DEMO_ID}`}>进入演示对局</Link>
+                    <Link href={`/game/${room.id}`}>加入对局</Link>
                   )
                 ) : room.status === "已结束" ? (
                   <Link href={`/game-record/${room.id}`}>查看棋谱</Link>

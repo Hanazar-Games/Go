@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { usePreferences } from "@/components/preferences/PreferencesProvider";
 import { Avatar } from "@/components/ui/Avatar";
 import { createEndgameStones, lobbyMessages, players } from "@/data/mock";
@@ -14,6 +14,13 @@ import {
   type GoPoint,
   type PlayResult,
 } from "@/lib/go-engine";
+import {
+  formatGameClock,
+  parseTimeControl,
+  resetByoyomi,
+  tickGameClock,
+  type GameClock,
+} from "@/lib/game-clock";
 import { SITE_VERSION } from "@/lib/release";
 import type { BoardSize, ChatMessage, Room, Stone } from "@/types/site";
 import { GoBoard } from "./GoBoard";
@@ -56,24 +63,25 @@ function coordinate(move: GameMove) {
 const opposite = (color: GoColor): GoColor => (color === "black" ? "white" : "black");
 const colorName = (color: GoColor) => (color === "black" ? "黑方" : "白方");
 
-function startingPosition(size: BoardSize, fresh: boolean) {
+function startingPosition(size: BoardSize, fresh: boolean, userColor: GoColor) {
   if (fresh) {
+    if (userColor === "black") return [];
     const starLine = size === 9 ? 2 : 3;
     return [{ x: size - 1 - starLine, y: starLine, color: "black", last: true } satisfies Stone];
   }
   return createEndgameStones().filter(({ x, y }) => x < size && y < size);
 }
 
-function createInitialPosition(size: BoardSize, fresh: boolean): PositionState {
-  const stones = startingPosition(size, fresh);
+function createInitialPosition(size: BoardSize, fresh: boolean, userColor: GoColor): PositionState {
+  const stones = startingPosition(size, fresh, userColor);
   const hash = boardHash(stones, size);
   return {
     stones,
     moves: stones.map(({ x, y, color }) => ({ x, y, color })),
-    nextColor: fresh ? "white" : "black",
+    nextColor: fresh ? userColor : "black",
     captures: { black: 0, white: 0 },
     consecutivePasses: 0,
-    hashes: fresh ? [boardHash([], size), hash] : [hash],
+    hashes: fresh && stones.length ? [boardHash([], size), hash] : [hash],
   };
 }
 
@@ -143,31 +151,26 @@ function demoReply(position: PositionState, size: BoardSize) {
   return null;
 }
 
-function initialClock(timeControl?: string) {
-  const minutes = Number(timeControl?.match(/^(\d+)分/)?.[1] ?? 20);
-  return Number.isFinite(minutes) ? minutes * 60 : 20 * 60;
-}
-
-function formatClock(seconds: number) {
-  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-}
-
 export function GameRoom({
   id,
   room,
   spectator = false,
   fresh = false,
+  userColor = fresh ? "white" : "black",
 }: {
   id: string;
   room?: Room;
   spectator?: boolean;
   fresh?: boolean;
+  userColor?: GoColor;
 }) {
   const boardSize = room?.boardSize ?? 19;
   const finished = room?.status === "已结束" || id === "2371";
   const waiting = room?.status === "等待中";
   const { playSound } = usePreferences();
-  const [positions, setPositions] = useState<PositionState[]>(() => [createInitialPosition(boardSize, fresh)]);
+  const [positions, setPositions] = useState<PositionState[]>(() => [
+    createInitialPosition(boardSize, fresh, userColor),
+  ]);
   const position = positions.at(-1)!;
   const { stones, moves, nextColor, captures } = position;
   const [gameOver, setGameOver] = useState(finished);
@@ -179,9 +182,14 @@ export function GameRoom({
   const [result, setResult] = useState(finished ? "白中盘胜" : "对局进行中");
   const [winnerColor, setWinnerColor] = useState<GoColor | null>(finished ? "white" : null);
   const [sgfResult, setSgfResult] = useState(finished ? "W+R" : "?");
-  const [ruleNotice, setRuleNotice] = useState(fresh ? "白方（访客棋手）请落子" : "棋局资料已载入");
-  const startingSeconds = initialClock(room?.timeControl);
-  const [clocks, setClocks] = useState({ black: startingSeconds, white: startingSeconds });
+  const [ruleNotice, setRuleNotice] = useState(
+    fresh ? `${colorName(userColor)}（访客棋手）请落子` : "棋局资料已载入",
+  );
+  const [clocks, setClocks] = useState<Record<GoColor, GameClock>>(() => ({
+    black: parseTimeControl(room?.timeControl ?? "20分+3×30秒"),
+    white: parseTimeControl(room?.timeControl ?? "20分+3×30秒"),
+  }));
+  const clocksRef = useRef(clocks);
 
   const blackName = room?.host ?? "俞晓旸";
   const whiteName = room?.guest ?? (waiting && fresh ? "访客棋手" : waiting ? "等待对手" : "褚赢");
@@ -203,10 +211,17 @@ export function GameRoom({
   };
   const winner = winnerColor === "black" ? blackPlayer : whitePlayer;
   const loser = winnerColor === "black" ? whitePlayer : blackPlayer;
-  const opponentName = id === "2371" || (waiting && fresh) ? blackName : (room?.guest ?? room?.host ?? "俞晓旸");
-  const userColor: GoColor = fresh ? "white" : "black";
+  const opponentName = userColor === "black" ? whiteName : blackName;
   const thinking = fresh && !spectator && !gameOver && nextColor !== userColor;
   const provisionalScore = position.consecutivePasses >= 2;
+  const resetMovedClock = useCallback((color: GoColor) => {
+    const current = clocksRef.current;
+    const clock = resetByoyomi(current[color]);
+    if (clock === current[color]) return;
+    const updated = { ...current, [color]: clock };
+    clocksRef.current = updated;
+    setClocks(updated);
+  }, []);
 
   useEffect(() => {
     if (!resultOpen && !privateOpen) return;
@@ -222,14 +237,34 @@ export function GameRoom({
   useEffect(() => {
     if (spectator || gameOver || !fresh) return;
     const timer = window.setInterval(() => {
-      setClocks((current) => ({ ...current, [nextColor]: Math.max(0, current[nextColor] - 1) }));
+      const current = clocksRef.current;
+      const clock = tickGameClock(current[nextColor]);
+      if (clock === current[nextColor]) return;
+      const updated = { ...current, [nextColor]: clock };
+      clocksRef.current = updated;
+      setClocks(updated);
+      if (!clock.expired) return;
+
+      const winning = opposite(nextColor);
+      setWinnerColor(winning);
+      setSgfResult(`${winning === "black" ? "B" : "W"}+T`);
+      setResult(`${colorName(nextColor)}超时，${colorName(winning)}胜`);
+      setMessages((messages) => [
+        ...messages,
+        { time: "系统", name: "系统", text: `${colorName(nextColor)}用时耗尽，对局结束。`, system: true },
+      ]);
+      setGameOver(true);
+      setResultOpen(true);
+      setRuleNotice(`${colorName(nextColor)}超时，棋钟停止`);
+      playSound("success");
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [fresh, gameOver, nextColor, spectator]);
+  }, [fresh, gameOver, nextColor, playSound, spectator]);
 
   useEffect(() => {
     if (!thinking) return;
     const timer = window.setTimeout(() => {
+      const demoColor = position.nextColor;
       if (position.consecutivePasses === 1) {
         const next = applyPass(position);
         const rules = room?.rules ?? "中国规则";
@@ -237,9 +272,15 @@ export function GameRoom({
         const score = scorePosition(next.stones, boardSize, rules, komi, next.captures);
         const scoreWinner = score.winner;
         setPositions((current) => (current.at(-1) === position ? [...current, next] : current));
+        resetMovedClock(demoColor);
         setMessages((current) => [
           ...current,
-          { time: "系统", name: "系统", text: "黑方同意停一手，进入本地数目试算。", system: true },
+          {
+            time: "系统",
+            name: "系统",
+            text: `${colorName(demoColor)}同意停一手，进入本地数目试算。`,
+            system: true,
+          },
         ]);
         setWinnerColor(scoreWinner);
         setSgfResult(scoreWinner ? `${scoreWinner === "black" ? "B" : "W"}+${score.margin}` : "0");
@@ -256,23 +297,25 @@ export function GameRoom({
       const reply = demoReply(position, boardSize);
       if (!reply) {
         setPositions((current) => (current.at(-1) === position ? [...current, applyPass(position)] : current));
-        setRuleNotice("黑方无可用演示应手，选择停一手");
+        resetMovedClock(demoColor);
+        setRuleNotice(`${colorName(demoColor)}无可用演示应手，选择停一手`);
         return;
       }
       const next = applyLegalMove(position, reply.point, reply.result);
       setPositions((current) => (current.at(-1) === position ? [...current, next] : current));
+      resetMovedClock(demoColor);
       setRuleNotice(
-        `黑方演示应手 ${coordinate({ ...reply.point, color: "black" })}${reply.result.captured ? `，提 ${reply.result.captured} 子` : ""}；轮到白方`,
+        `${colorName(demoColor)}演示应手 ${coordinate({ ...reply.point, color: demoColor })}${reply.result.captured ? `，提 ${reply.result.captured} 子` : ""}；轮到${colorName(userColor)}`,
       );
       playSound("stone");
     }, 650);
     return () => window.clearTimeout(timer);
-  }, [boardSize, playSound, position, room?.komi, room?.rules, thinking]);
+  }, [boardSize, playSound, position, resetMovedClock, room?.komi, room?.rules, thinking, userColor]);
 
   function place(point: { x: number; y: number }) {
     if (gameOver || spectator) return;
     if (nextColor !== userColor) {
-      setRuleNotice("请等待黑方演示应手");
+      setRuleNotice(`请等待${colorName(nextColor)}演示应手`);
       playSound("error");
       return;
     }
@@ -295,8 +338,9 @@ export function GameRoom({
       return;
     }
     setPositions((current) => [...current, applyLegalMove(position, point, move)]);
+    resetMovedClock(nextColor);
     setRuleNotice(
-      `${colorName(nextColor)}落子 ${coordinate({ ...point, color: nextColor })}${move.captured ? `，提 ${move.captured} 子` : ""}；黑方正在应手`,
+      `${colorName(nextColor)}落子 ${coordinate({ ...point, color: nextColor })}${move.captured ? `，提 ${move.captured} 子` : ""}；${colorName(opposite(nextColor))}正在应手`,
     );
     playSound("stone");
   }
@@ -341,6 +385,7 @@ export function GameRoom({
     if (nextColor !== userColor || thinking) return;
     const color = userColor;
     setPositions((current) => [...current, applyPass(position)]);
+    resetMovedClock(color);
     setMessages((current) => [
       ...current,
       {
@@ -350,7 +395,7 @@ export function GameRoom({
         system: true,
       },
     ]);
-    setRuleNotice(`${colorName(color)}停一手，等待黑方确认`);
+    setRuleNotice(`${colorName(color)}停一手，等待${colorName(opposite(color))}确认`);
     playSound("message");
   }
 
@@ -374,16 +419,17 @@ export function GameRoom({
     }
     const removeCount = nextColor === userColor ? Math.min(2, positions.length - 1) : 1;
     setPositions((current) => current.slice(0, -removeCount));
+    const previous = positions.at(-(removeCount + 1))!;
     setMessages((current) => [
       ...current,
       {
         time: "系统",
         name: "系统",
-        text: `黑方已同意本地悔棋，回退 ${removeCount} 手；联网后将由对手确认。`,
+        text: `${opponentName}已同意本地悔棋，回退 ${removeCount} 手；联网后将由对手确认。`,
         system: true,
       },
     ]);
-    setRuleNotice(`已回退 ${removeCount} 手，轮到白方重新落子`);
+    setRuleNotice(`已回退 ${removeCount} 手，轮到${colorName(previous.nextColor)}重新落子`);
     playSound("message");
   }
 
@@ -420,7 +466,13 @@ export function GameRoom({
         />
         <div className={styles.boardStatus} role="status">
           <b>
-            {gameOver ? "对局结束" : spectator ? "观战模式" : thinking ? "黑方演示应手中…" : `轮到${colorName(nextColor)}`}
+            {gameOver
+              ? "对局结束"
+              : spectator
+                ? "观战模式"
+                : thinking
+                  ? `${colorName(nextColor)}演示应手中…`
+                  : `轮到${colorName(nextColor)}`}
             　·　第 {moves.length} 手
           </b>
           {!spectator && <span>{ruleNotice}</span>}
@@ -500,8 +552,13 @@ export function GameRoom({
 
       <aside className={styles.sidebar}>
         <section className={styles.matchCard}>
-          <div>
-            {id}号对局室　{room?.rules ?? "中国规则"}　黑贴{room?.komi ?? 7.5}目
+          <div className={styles.gameMeta}>
+            <b>
+              {id}号对局室　{boardSize}路　{room?.rules ?? "中国规则"}
+            </b>
+            <span>
+              黑贴{room?.komi ?? 7.5}目　{room?.timeControl ?? "20分+3×30秒"}
+            </span>
           </div>
           <div className={styles.versus}>
             <article>
@@ -533,11 +590,15 @@ export function GameRoom({
             </article>
           </div>
           <div className={styles.clocks}>
-            <span className={!gameOver && nextColor === "black" ? styles.activeClock : ""}>
-              黑方　{formatClock(clocks.black)}
+            <span
+              className={`${!gameOver && nextColor === "black" ? styles.activeClock : ""} ${clocks.black.expired ? styles.expiredClock : ""}`}
+            >
+              <b>黑方</b>　{formatGameClock(clocks.black)}
             </span>
-            <span className={!gameOver && nextColor === "white" ? styles.activeClock : ""}>
-              白方　{formatClock(clocks.white)}
+            <span
+              className={`${!gameOver && nextColor === "white" ? styles.activeClock : ""} ${clocks.white.expired ? styles.expiredClock : ""}`}
+            >
+              <b>白方</b>　{formatGameClock(clocks.white)}
             </span>
           </div>
           <div className={styles.ruleStats}>

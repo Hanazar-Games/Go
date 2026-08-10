@@ -64,8 +64,27 @@
   box-shadow: inset 0 0 22px #bd7f39;
 }
 .matchCard > div:first-child {
-  padding: 10px 12px 2px;
+  padding: 7px 12px 3px;
   color: #543a25;
+}
+.gameMeta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  border-bottom: 1px dotted #a87139;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.gameMeta b,
+.gameMeta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gameMeta b {
+  color: #173f76;
+  font-size: 12px;
 }
 .versus {
   display: grid;
@@ -142,18 +161,29 @@
   border: 2px inset #dcb670;
   background: #b57634;
   color: #fff1c3;
-  font:
-    15px "Courier New",
-    monospace;
+  font: 13px SimSun, serif;
 }
 .clocks span {
   padding: 5px;
+  border-right: 1px solid #8f582c;
   text-align: center;
+  white-space: nowrap;
+}
+.clocks span:last-child {
+  border-right: 0;
+}
+.clocks b {
+  font-weight: 400;
 }
 .clocks .activeClock {
   background: #794b25;
   color: #fff3a8;
   animation: clock-pulse 1s steps(1, end) infinite;
+}
+.clocks .expiredClock {
+  background: #732d28;
+  color: #fff;
+  animation: none;
 }
 .ruleStats {
   display: grid;
