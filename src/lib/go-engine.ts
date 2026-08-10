@@ -15,8 +15,7 @@ export interface CaptureTally {
 type IllegalReason = "occupied" | "out-of-board" | "suicide" | "ko";
 
 export type PlayResult =
-  | { ok: true; stones: Stone[]; captured: number; hash: string }
-  | { ok: false; reason: IllegalReason };
+  { ok: true; stones: Stone[]; captured: number; hash: string } | { ok: false; reason: IllegalReason };
 
 const pointKey = ({ x, y }: GoPoint) => `${x},${y}`;
 const opposite = (color: GoColor): GoColor => (color === "black" ? "white" : "black");
@@ -51,6 +50,34 @@ function collectGroup(board: Map<string, Stone>, origin: GoPoint, size: number) 
   }
 
   return { stones: group, liberties };
+}
+
+export function getGroupPoints(stones: Stone[], size: number, origin: GoPoint): GoPoint[] {
+  const board = new Map(stones.map((stone) => [pointKey(stone), stone]));
+  return [...collectGroup(board, origin, size).stones]
+    .map((key) => {
+      const [x, y] = key.split(",").map(Number);
+      return { x, y };
+    })
+    .sort((a, b) => a.y - b.y || a.x - b.x);
+}
+
+export function adjudicateDeadStones(stones: Stone[], deadKeys: Iterable<string>, captures: CaptureTally) {
+  const dead = new Set(deadKeys);
+  const removed: CaptureTally = { black: 0, white: 0 };
+  const remaining = stones.filter((stone) => {
+    if (!dead.has(pointKey(stone))) return true;
+    removed[stone.color] += 1;
+    return false;
+  });
+  return {
+    stones: remaining,
+    captures: {
+      black: captures.black + removed.white,
+      white: captures.white + removed.black,
+    },
+    removed,
+  };
 }
 
 export function boardHash(stones: Stone[], size: number) {
@@ -145,8 +172,7 @@ export function scorePosition(
     (count, stone) => ({ ...count, [stone.color]: count[stone.color] + 1 }),
     { black: 0, white: 0 },
   );
-  const black =
-    rules === "中国规则" ? stoneCount.black + territory.black : territory.black + captures.black;
+  const black = rules === "中国规则" ? stoneCount.black + territory.black : territory.black + captures.black;
   const white =
     (rules === "中国规则" ? stoneCount.white + territory.white : territory.white + captures.white) + komi;
   return {

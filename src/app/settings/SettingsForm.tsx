@@ -85,7 +85,7 @@ export function SettingsForm() {
                 setSaved(false);
               }}
             />
-            背景乐（首次操作页面后播放）
+            低音量 MIDI 背景乐（首次操作后播放）
           </label>
           <label>
             <input

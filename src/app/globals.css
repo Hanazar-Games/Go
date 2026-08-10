@@ -27,6 +27,7 @@ body {
 
 body {
   min-height: 100vh;
+  padding: 12px 0;
   background: #121b2d radial-gradient(ellipse at center, #53657d 0, #1a263b 63%, #080d17 100%);
   color: var(--ink);
   font-family: var(--font-serif);
@@ -43,12 +44,17 @@ button,
 input,
 select,
 textarea {
+  border-radius: 0;
   color: inherit;
   font: inherit;
 }
 button,
 select {
   cursor: pointer;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: #000080;
 }
 button:focus-visible,
 a:focus-visible,

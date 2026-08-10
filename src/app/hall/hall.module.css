@@ -399,9 +399,9 @@
   margin-top: 8px;
   padding: 7px;
   border: 4px outset #bed1da;
-  background: linear-gradient(#e5eff1, #347ead 58%, #164a78);
+  background: linear-gradient(#e7eeee 0 23%, #648fa7 24% 56%, #285b7c 57% 100%);
   color: white;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 .matchBox strong,
@@ -478,7 +478,7 @@
   height: 34px;
   align-items: center;
   padding-left: 10px;
-  background: linear-gradient(90deg, #061b84, #2867d3);
+  background: linear-gradient(90deg, #000080 0 58%, #1084d0 100%);
   color: white;
   font-size: 16px;
   font-weight: 700;

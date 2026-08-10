@@ -147,7 +147,7 @@ function SiteFrame({ children }: { children: ReactNode }) {
           className={styles.soundToggle}
           type="button"
           aria-pressed={preferences.audio.bgm}
-          title="背景乐将在首次操作页面后播放"
+          title="低音量 MIDI 背景乐将在首次操作页面后播放"
           onClick={() =>
             savePreferences({
               ...preferences,

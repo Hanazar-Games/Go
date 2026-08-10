@@ -6,14 +6,14 @@
   height: min(876px, calc(100vh - 24px));
   min-height: 720px;
   flex-direction: column;
-  margin: 12px auto;
+  margin: 0 auto;
   overflow: hidden;
   border: 3px ridge #9daeb8;
   background: var(--paper-dark);
   box-shadow:
     0 0 0 2px #082a60,
     0 17px 42px #000b;
-  filter: saturate(0.74) contrast(0.92) sepia(0.06) blur(0.26px);
+  filter: saturate(0.64) contrast(0.9) sepia(0.09) blur(0.34px);
 }
 
 .crisp {
@@ -33,7 +33,7 @@
   gap: 5px;
   padding: 2px 3px 2px 5px;
   border-bottom: 1px solid #081d58;
-  background: linear-gradient(90deg, #08246d 0, #174eae 58%, #7ba7d8 100%);
+  background: linear-gradient(90deg, #000080 0, #000080 55%, #1084d0 100%);
   color: white;
   font-family: Arial, var(--font-serif);
   font-size: 12px;
@@ -88,20 +88,19 @@
 
 .softwareMenu {
   display: flex;
-  flex: 0 0 34px;
+  flex: 0 0 28px;
   align-items: center;
-  height: 34px;
-  padding: 0 16px;
+  height: 28px;
+  padding: 0 10px;
   border-bottom: 2px groove #82939e;
-  background: linear-gradient(#e5ecec, #aab9bb);
+  background: #d4d0c8;
 }
 
 .softwareMenu a {
-  min-width: 108px;
-  padding: 6px 14px;
+  min-width: 96px;
+  padding: 4px 12px;
   color: #112441;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 13px;
 }
 
 .softwareMenu a:hover {
@@ -134,9 +133,9 @@
 .masthead {
   position: relative;
   display: flex;
-  flex: 0 0 86px;
+  flex: 0 0 82px;
   align-items: center;
-  height: 86px;
+  height: 82px;
   overflow: hidden;
   border-bottom: 2px solid #a96928;
   background:
@@ -310,9 +309,9 @@
   justify-content: center;
   gap: 4px;
   border: 3px outset #d5e0e5;
-  background: linear-gradient(#f8fbfc, #6e99bb 66%, #245982);
+  background: linear-gradient(#f4f4ed 0 24%, #86a4b5 25% 57%, #51778f 58% 100%);
   color: #243a4c;
-  font-size: 16px;
+  font-size: 14px;
   text-shadow: 1px 1px #dce7ed;
 }
 .headerButtons i {
@@ -327,21 +326,20 @@
 
 .portalNav {
   display: flex;
-  flex: 0 0 35px;
-  height: 35px;
+  flex: 0 0 32px;
+  height: 32px;
   padding-left: 12px;
   border-top: 1px solid #e0ba7a;
   border-bottom: 3px ridge #986126;
-  background: linear-gradient(#dca55c, #bd7935);
+  background: linear-gradient(#dfad68 0 48%, #bd7935 49% 100%);
 }
 
 .portalNav a {
   min-width: 116px;
-  padding: 7px 14px 6px;
+  padding: 6px 14px 5px;
   border-right: 2px groove #dcb477;
   color: #302417;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
   text-align: center;
 }
 
@@ -354,8 +352,8 @@
 
 .ticker {
   display: grid;
-  flex: 0 0 23px;
-  height: 23px;
+  flex: 0 0 22px;
+  height: 22px;
   grid-template-columns: 76px minmax(0, 1fr) 245px;
   align-items: center;
   overflow: hidden;
@@ -433,12 +431,12 @@
 
 .statusBar {
   display: flex;
-  flex: 0 0 27px;
-  height: 27px;
+  flex: 0 0 24px;
+  height: 24px;
   align-items: center;
   gap: 0;
   border-top: 2px groove #ddd;
-  background: linear-gradient(#d8dedb, #aeb9b5);
+  background: #c0c0c0;
   color: #26342e;
   font:
     12px Arial,
@@ -479,7 +477,7 @@
   z-index: 100;
   inset: 0;
   pointer-events: none;
-  opacity: 0.075;
+  opacity: 0.09;
   background:
     repeating-linear-gradient(0deg, #000 0, #000 1px, transparent 1px, transparent 3px),
     repeating-linear-gradient(90deg, transparent 0, transparent 3px, #19232b 4px);

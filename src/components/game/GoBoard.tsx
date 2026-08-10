@@ -11,18 +11,26 @@ interface Point {
   y: number;
 }
 
+const emptyDeadKeys: ReadonlySet<string> = new Set();
+
 export function GoBoard({
   stones,
   size = 19,
   readOnly = false,
   disabled = false,
+  markDead = false,
+  deadStoneKeys = emptyDeadKeys,
   onMove,
+  onToggleDead,
 }: {
   stones: Stone[];
   size?: 9 | 13 | 19;
   readOnly?: boolean;
   disabled?: boolean;
+  markDead?: boolean;
+  deadStoneKeys?: ReadonlySet<string>;
   onMove?: (point: Point) => void;
+  onToggleDead?: (point: Point) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hover, setHover] = useState<Point | null>(null);
@@ -74,7 +82,7 @@ export function GoBoard({
       context.fillText(letter, padX + index * spacing, Math.max(16, padY - 15)),
     );
     for (let index = 0; index < size; index += 1)
-      context.fillText(String(index + 1), Math.max(12, padX - 21), padY + index * spacing + 5);
+      context.fillText(String(size - index), Math.max(12, padX - 21), padY + index * spacing + 5);
 
     const starIndexes = size === 19 ? [3, 9, 15] : size === 13 ? [3, 6, 9] : [2, 4, 6];
     starIndexes.forEach((x) =>
@@ -87,6 +95,7 @@ export function GoBoard({
 
     const radius = spacing * 0.47;
     stones.forEach((stone) => {
+      const markedDead = deadStoneKeys.has(`${stone.x},${stone.y}`);
       const cx = padX + stone.x * spacing;
       const cy = padY + stone.y * spacing;
       const gradient = context.createRadialGradient(cx - radius * 0.35, cy - radius * 0.4, 1, cx, cy, radius);
@@ -105,9 +114,20 @@ export function GoBoard({
       context.shadowColor = "#3b2a17aa";
       context.shadowBlur = 2;
       context.shadowOffsetY = 1;
+      context.globalAlpha = markedDead ? 0.42 : 1;
       context.fill();
+      context.globalAlpha = 1;
       context.shadowColor = "transparent";
-      if (stone.last) {
+      if (markedDead) {
+        context.beginPath();
+        context.moveTo(cx - radius * 0.48, cy - radius * 0.48);
+        context.lineTo(cx + radius * 0.48, cy + radius * 0.48);
+        context.moveTo(cx + radius * 0.48, cy - radius * 0.48);
+        context.lineTo(cx - radius * 0.48, cy + radius * 0.48);
+        context.strokeStyle = "#a11d18";
+        context.lineWidth = 2;
+        context.stroke();
+      } else if (stone.last) {
         context.beginPath();
         context.moveTo(cx, cy - 6);
         context.lineTo(cx - 6, cy + 5);
@@ -118,13 +138,20 @@ export function GoBoard({
       }
     });
 
-    if (!readOnly && !disabled && hover && !stones.some(({ x, y }) => x === hover.x && y === hover.y)) {
+    if (!readOnly && !disabled && hover) {
+      const occupied = stones.some(({ x, y }) => x === hover.x && y === hover.y);
       context.beginPath();
       context.arc(padX + hover.x * spacing, padY + hover.y * spacing, radius, 0, Math.PI * 2);
-      context.fillStyle = "#13131372";
-      context.fill();
+      if (markDead && occupied) {
+        context.strokeStyle = "#a11d18";
+        context.lineWidth = 2;
+        context.stroke();
+      } else if (!markDead && !occupied) {
+        context.fillStyle = "#13131372";
+        context.fill();
+      }
     }
-  }, [disabled, hover, readOnly, size, stones]);
+  }, [deadStoneKeys, disabled, hover, markDead, readOnly, size, stones]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -159,15 +186,18 @@ export function GoBoard({
     }
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      onMove?.(current);
+      if (markDead) onToggleDead?.(current);
+      else onMove?.(current);
     }
   }
 
   return (
     <canvas
       ref={canvasRef}
-      className={readOnly ? styles.readOnly : disabled ? styles.disabled : styles.board}
-      aria-label={`${size}路围棋棋盘${readOnly ? "，观战模式" : disabled ? "，等待对手" : "，可落子"}`}
+      className={
+        readOnly ? styles.readOnly : disabled ? styles.disabled : markDead ? styles.marking : styles.board
+      }
+      aria-label={`${size}路围棋棋盘${readOnly ? "，观战模式" : disabled ? "，等待对手" : markDead ? "，数目阶段，可标记死子" : "，可落子"}`}
       role={readOnly ? "img" : "button"}
       tabIndex={readOnly ? -1 : 0}
       aria-disabled={readOnly ? undefined : disabled}
@@ -186,7 +216,10 @@ export function GoBoard({
       onClick={(event) => {
         if (!readOnly && !disabled) {
           const point = toPoint(event);
-          if (point.x >= 0 && point.x < size && point.y >= 0 && point.y < size) onMove?.(point);
+          if (point.x >= 0 && point.x < size && point.y >= 0 && point.y < size) {
+            if (markDead) onToggleDead?.(point);
+            else onMove?.(point);
+          }
         }
       }}
     />

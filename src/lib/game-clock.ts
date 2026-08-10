@@ -35,14 +35,37 @@ export function parseTimeControl(value: string): GameClock {
   };
 }
 
-export function tickGameClock(clock: GameClock): GameClock {
+export function advanceGameClock(clock: GameClock, elapsedSeconds: number): GameClock {
   if (clock.expired || clock.mainSeconds === null) return clock;
-  if (clock.mainSeconds > 0) return { ...clock, mainSeconds: clock.mainSeconds - 1 };
-  if (clock.periodSeconds > 1) return { ...clock, periodSeconds: clock.periodSeconds - 1 };
-  if (clock.periods > 1) {
-    return { ...clock, periods: clock.periods - 1, periodSeconds: clock.byoyomiSeconds };
+  let remaining = Math.max(0, Math.floor(elapsedSeconds));
+  if (!remaining) return clock;
+  let next = { ...clock };
+
+  if (next.mainSeconds !== null && next.mainSeconds > 0) {
+    const used = Math.min(next.mainSeconds, remaining);
+    next.mainSeconds -= used;
+    remaining -= used;
   }
-  return { ...clock, periods: 0, periodSeconds: 0, expired: true };
+
+  while (remaining > 0 && !next.expired) {
+    if (remaining < next.periodSeconds) {
+      next.periodSeconds -= remaining;
+      remaining = 0;
+    } else {
+      remaining -= next.periodSeconds;
+      if (next.periods > 1) {
+        next.periods -= 1;
+        next.periodSeconds = next.byoyomiSeconds;
+      } else {
+        next = { ...next, periods: 0, periodSeconds: 0, expired: true };
+      }
+    }
+  }
+  return next;
+}
+
+export function tickGameClock(clock: GameClock): GameClock {
+  return advanceGameClock(clock, 1);
 }
 
 export function resetByoyomi(clock: GameClock): GameClock {

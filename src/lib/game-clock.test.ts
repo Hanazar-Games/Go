@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatGameClock, parseTimeControl, resetByoyomi, tickGameClock } from "./game-clock";
+import {
+  advanceGameClock,
+  formatGameClock,
+  parseTimeControl,
+  resetByoyomi,
+  tickGameClock,
+} from "./game-clock";
 
 describe("game clock", () => {
   it("parses main time and byo-yomi periods", () => {
@@ -24,6 +30,21 @@ describe("game clock", () => {
 
     expect(endOfMain).toMatchObject({ mainSeconds: 0, periods: 3, periodSeconds: 30 });
     expect(tickGameClock(endOfMain)).toMatchObject({ mainSeconds: 0, periods: 3, periodSeconds: 29 });
+  });
+
+  it("catches up elapsed time after a delayed browser tick", () => {
+    const clock = { ...parseTimeControl("10分+3×20秒"), mainSeconds: 2 };
+    expect(advanceGameClock(clock, 23)).toMatchObject({
+      mainSeconds: 0,
+      periods: 2,
+      periodSeconds: 19,
+      expired: false,
+    });
+    expect(advanceGameClock(clock, 62)).toMatchObject({ periods: 0, expired: true });
+    expect(advanceGameClock(parseTimeControl("不限时"), 3600)).toMatchObject({
+      mainSeconds: null,
+      expired: false,
+    });
   });
 
   it("loses a period at zero and expires after the last period", () => {

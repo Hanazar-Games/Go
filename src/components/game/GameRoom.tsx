@@ -5,8 +5,11 @@ import { type FormEvent, useCallback, useEffect, useRef, useState } from "react"
 import { usePreferences } from "@/components/preferences/PreferencesProvider";
 import { Avatar } from "@/components/ui/Avatar";
 import { createEndgameStones, lobbyMessages, players } from "@/data/mock";
+import { formatGoCoordinate } from "@/lib/board";
 import {
+  adjudicateDeadStones,
   boardHash,
+  getGroupPoints,
   playMove,
   scorePosition,
   type CaptureTally,
@@ -15,13 +18,14 @@ import {
   type PlayResult,
 } from "@/lib/go-engine";
 import {
+  advanceGameClock,
   formatGameClock,
   parseTimeControl,
   resetByoyomi,
-  tickGameClock,
   type GameClock,
 } from "@/lib/game-clock";
 import { SITE_VERSION } from "@/lib/release";
+import { buildSgf } from "@/lib/sgf";
 import type { BoardSize, ChatMessage, Room, Stone } from "@/types/site";
 import { GoBoard } from "./GoBoard";
 import styles from "./GameRoom.module.css";
@@ -55,9 +59,9 @@ const initialPrivateMessages: PrivateMessage[] = [
   { name: "褚赢", time: "15:49:18", text: "时光会把你雕刻成，你应有的样子：）" },
 ];
 
-function coordinate(move: GameMove) {
+function coordinate(move: GameMove, size: number) {
   if (move.x === undefined || move.y === undefined) return "停一手";
-  return `${"ABCDEFGHJKLMNOPQRST"[move.x] ?? "?"}${move.y + 1}`;
+  return formatGoCoordinate({ x: move.x, y: move.y }, size);
 }
 
 const opposite = (color: GoColor): GoColor => (color === "black" ? "white" : "black");
@@ -174,6 +178,8 @@ export function GameRoom({
   const position = positions.at(-1)!;
   const { stones, moves, nextColor, captures } = position;
   const [gameOver, setGameOver] = useState(finished);
+  const [scoring, setScoring] = useState(false);
+  const [deadKeys, setDeadKeys] = useState<Set<string>>(() => new Set());
   const [resultOpen, setResultOpen] = useState(finished);
   const [tab, setTab] = useState<"moves" | "chat">("chat");
   const [messages, setMessages] = useState<ChatMessage[]>(lobbyMessages);
@@ -190,6 +196,7 @@ export function GameRoom({
     white: parseTimeControl(room?.timeControl ?? "20分+3×30秒"),
   }));
   const clocksRef = useRef(clocks);
+  const lastClockTickRef = useRef(0);
 
   const blackName = room?.host ?? "俞晓旸";
   const whiteName = room?.guest ?? (waiting && fresh ? "访客棋手" : waiting ? "等待对手" : "褚赢");
@@ -212,8 +219,17 @@ export function GameRoom({
   const winner = winnerColor === "black" ? blackPlayer : whitePlayer;
   const loser = winnerColor === "black" ? whitePlayer : blackPlayer;
   const opponentName = userColor === "black" ? whiteName : blackName;
-  const thinking = fresh && !spectator && !gameOver && nextColor !== userColor;
-  const provisionalScore = position.consecutivePasses >= 2;
+  const thinking = fresh && !spectator && !gameOver && !scoring && nextColor !== userColor;
+  const provisionalScore = scoring;
+  const scoreUnit = room?.rules === "日本规则" ? "目" : "点";
+  const scoredPosition = adjudicateDeadStones(stones, deadKeys, captures);
+  const scorePreview = scorePosition(
+    scoredPosition.stones,
+    boardSize,
+    room?.rules ?? "中国规则",
+    room?.komi ?? 7.5,
+    scoredPosition.captures,
+  );
   const resetMovedClock = useCallback((color: GoColor) => {
     const current = clocksRef.current;
     const clock = resetByoyomi(current[color]);
@@ -235,10 +251,15 @@ export function GameRoom({
   }, [privateOpen, resultOpen]);
 
   useEffect(() => {
-    if (spectator || gameOver || !fresh) return;
+    if (spectator || gameOver || scoring || !fresh) return;
+    lastClockTickRef.current = Date.now();
     const timer = window.setInterval(() => {
+      const now = Date.now();
+      const elapsed = Math.floor((now - lastClockTickRef.current) / 1000);
+      if (elapsed < 1) return;
+      lastClockTickRef.current += elapsed * 1000;
       const current = clocksRef.current;
-      const clock = tickGameClock(current[nextColor]);
+      const clock = advanceGameClock(current[nextColor], elapsed);
       if (clock === current[nextColor]) return;
       const updated = { ...current, [nextColor]: clock };
       clocksRef.current = updated;
@@ -257,9 +278,9 @@ export function GameRoom({
       setResultOpen(true);
       setRuleNotice(`${colorName(nextColor)}超时，棋钟停止`);
       playSound("success");
-    }, 1000);
+    }, 500);
     return () => window.clearInterval(timer);
-  }, [fresh, gameOver, nextColor, playSound, spectator]);
+  }, [fresh, gameOver, nextColor, playSound, scoring, spectator]);
 
   useEffect(() => {
     if (!thinking) return;
@@ -267,12 +288,10 @@ export function GameRoom({
       const demoColor = position.nextColor;
       if (position.consecutivePasses === 1) {
         const next = applyPass(position);
-        const rules = room?.rules ?? "中国规则";
-        const komi = room?.komi ?? 7.5;
-        const score = scorePosition(next.stones, boardSize, rules, komi, next.captures);
-        const scoreWinner = score.winner;
         setPositions((current) => (current.at(-1) === position ? [...current, next] : current));
         resetMovedClock(demoColor);
+        setDeadKeys(new Set());
+        setScoring(true);
         setMessages((current) => [
           ...current,
           {
@@ -282,21 +301,16 @@ export function GameRoom({
             system: true,
           },
         ]);
-        setWinnerColor(scoreWinner);
-        setSgfResult(scoreWinner ? `${scoreWinner === "black" ? "B" : "W"}+${score.margin}` : "0");
-        setResult(
-          `本地试算：黑 ${score.black} 点，白 ${score.white} 点（含贴目 ${komi}）；${scoreWinner ? `${colorName(scoreWinner)}领先 ${score.margin} 点` : "双方同分"}。死子尚待双方确认。`,
-        );
-        setGameOver(true);
-        setResultOpen(true);
-        setRuleNotice("试算完成：正式结果需双方确认死子");
-        playSound("success");
+        setRuleNotice("双方连续停着：请点击盘上死子整组标记，再确认数目");
+        playSound("message");
         return;
       }
 
       const reply = demoReply(position, boardSize);
       if (!reply) {
-        setPositions((current) => (current.at(-1) === position ? [...current, applyPass(position)] : current));
+        setPositions((current) =>
+          current.at(-1) === position ? [...current, applyPass(position)] : current,
+        );
         resetMovedClock(demoColor);
         setRuleNotice(`${colorName(demoColor)}无可用演示应手，选择停一手`);
         return;
@@ -305,15 +319,15 @@ export function GameRoom({
       setPositions((current) => (current.at(-1) === position ? [...current, next] : current));
       resetMovedClock(demoColor);
       setRuleNotice(
-        `${colorName(demoColor)}演示应手 ${coordinate({ ...reply.point, color: demoColor })}${reply.result.captured ? `，提 ${reply.result.captured} 子` : ""}；轮到${colorName(userColor)}`,
+        `${colorName(demoColor)}演示应手 ${coordinate({ ...reply.point, color: demoColor }, boardSize)}${reply.result.captured ? `，提 ${reply.result.captured} 子` : ""}；轮到${colorName(userColor)}`,
       );
       playSound("stone");
     }, 650);
     return () => window.clearTimeout(timer);
-  }, [boardSize, playSound, position, resetMovedClock, room?.komi, room?.rules, thinking, userColor]);
+  }, [boardSize, playSound, position, resetMovedClock, thinking, userColor]);
 
   function place(point: { x: number; y: number }) {
-    if (gameOver || spectator) return;
+    if (gameOver || scoring || spectator) return;
     if (nextColor !== userColor) {
       setRuleNotice(`请等待${colorName(nextColor)}演示应手`);
       playSound("error");
@@ -340,7 +354,7 @@ export function GameRoom({
     setPositions((current) => [...current, applyLegalMove(position, point, move)]);
     resetMovedClock(nextColor);
     setRuleNotice(
-      `${colorName(nextColor)}落子 ${coordinate({ ...point, color: nextColor })}${move.captured ? `，提 ${move.captured} 子` : ""}；${colorName(opposite(nextColor))}正在应手`,
+      `${colorName(nextColor)}落子 ${coordinate({ ...point, color: nextColor }, boardSize)}${move.captured ? `，提 ${move.captured} 子` : ""}；${colorName(opposite(nextColor))}正在应手`,
     );
     playSound("stone");
   }
@@ -382,9 +396,10 @@ export function GameRoom({
   }
 
   function pass() {
-    if (nextColor !== userColor || thinking) return;
+    if (scoring || nextColor !== userColor || thinking) return;
     const color = userColor;
-    setPositions((current) => [...current, applyPass(position)]);
+    const next = applyPass(position);
+    setPositions((current) => [...current, next]);
     resetMovedClock(color);
     setMessages((current) => [
       ...current,
@@ -395,7 +410,77 @@ export function GameRoom({
         system: true,
       },
     ]);
-    setRuleNotice(`${colorName(color)}停一手，等待${colorName(opposite(color))}确认`);
+    if (next.consecutivePasses >= 2) {
+      setDeadKeys(new Set());
+      setScoring(true);
+      setRuleNotice("双方连续停着：请点击盘上死子整组标记，再确认数目");
+    } else {
+      setRuleNotice(`${colorName(color)}停一手，等待${colorName(opposite(color))}确认`);
+    }
+    playSound("message");
+  }
+
+  function toggleDeadStone(point: GoPoint) {
+    if (!scoring) return;
+    const group = getGroupPoints(stones, boardSize, point);
+    if (!group.length) {
+      setRuleNotice("请点击需要标记为死子的棋块");
+      playSound("error");
+      return;
+    }
+    const keys = group.map(({ x, y }) => `${x},${y}`);
+    const unmark = keys.every((key) => deadKeys.has(key));
+    setDeadKeys((current) => {
+      const next = new Set(current);
+      keys.forEach((key) => (unmark ? next.delete(key) : next.add(key)));
+      return next;
+    });
+    const stone = stones.find(({ x, y }) => x === point.x && y === point.y)!;
+    setRuleNotice(`${unmark ? "取消" : "标记"}${colorName(stone.color)}死子 ${group.length} 枚`);
+    playSound("message");
+  }
+
+  function confirmScore() {
+    if (!scoring) return;
+    const scoreWinner = scorePreview.winner;
+    const removed = scoredPosition.removed.black + scoredPosition.removed.white;
+    setWinnerColor(scoreWinner);
+    setSgfResult(scoreWinner ? `${scoreWinner === "black" ? "B" : "W"}+${scorePreview.margin}` : "0");
+    setResult(
+      `终局确认：黑 ${scorePreview.black} ${scoreUnit}，白 ${scorePreview.white} ${scoreUnit}（含贴目 ${room?.komi ?? 7.5}）；${scoreWinner ? `${colorName(scoreWinner)}胜 ${scorePreview.margin} ${scoreUnit}` : "双方和棋"}。标记死子 ${removed} 枚。`,
+    );
+    setMessages((current) => [
+      ...current,
+      { time: "系统", name: "系统", text: `双方确认数目，终局移除死子 ${removed} 枚。`, system: true },
+    ]);
+    setPositions((current) => {
+      const latest = current.at(-1)!;
+      return [
+        ...current.slice(0, -1),
+        { ...latest, stones: scoredPosition.stones, captures: scoredPosition.captures },
+      ];
+    });
+    setDeadKeys(new Set());
+    setScoring(false);
+    setGameOver(true);
+    setResultOpen(true);
+    setRuleNotice("终局数目已确认，对局结束");
+    playSound("success");
+  }
+
+  function resumePlay() {
+    if (!scoring) return;
+    setPositions((current) => {
+      const latest = current.at(-1)!;
+      return [...current.slice(0, -1), { ...latest, consecutivePasses: 0 }];
+    });
+    setDeadKeys(new Set());
+    setScoring(false);
+    setMessages((current) => [
+      ...current,
+      { time: "系统", name: "系统", text: "死子判定未达成一致，恢复行棋。", system: true },
+    ]);
+    setRuleNotice(`已恢复行棋，轮到${colorName(nextColor)}`);
     playSound("message");
   }
 
@@ -434,17 +519,21 @@ export function GameRoom({
   }
 
   function saveSgf() {
-    const sgfMoves = moves
-      .map(
-        ({ x, y, color }) =>
-          `;${color === "black" ? "B" : "W"}[${x === undefined || y === undefined ? "" : `${String.fromCharCode(97 + x)}${String.fromCharCode(97 + y)}`}]`,
-      )
-      .join("");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(
       new Blob(
         [
-          `(;GM[1]FF[4]CA[UTF-8]AP[Weida:${SITE_VERSION}]SZ[${boardSize}]KM[${room?.komi ?? 7.5}]RU[${room?.rules ?? "中国规则"}]PW[${whiteName}]PB[${blackName}]RE[${sgfResult}]${sgfMoves})`,
+          buildSgf({
+            appVersion: SITE_VERSION,
+            size: boardSize,
+            komi: room?.komi ?? 7.5,
+            rules: room?.rules ?? "中国规则",
+            timeControl: room?.timeControl ?? "20分+3×30秒",
+            blackName,
+            whiteName,
+            result: sgfResult,
+            moves,
+          }),
         ],
         { type: "application/x-go-sgf" },
       ),
@@ -462,17 +551,29 @@ export function GameRoom({
           size={boardSize}
           readOnly={spectator || gameOver}
           disabled={thinking}
+          markDead={scoring}
+          deadStoneKeys={deadKeys}
           onMove={place}
+          onToggleDead={toggleDeadStone}
         />
+        {scoring && (
+          <div className={styles.scoringBar} role="status">
+            <b>终局数目：</b>
+            点击棋块整组标记死子　已标 {deadKeys.size} 子　盘面黑 {scorePreview.black} / 白{" "}
+            {scorePreview.white}
+          </div>
+        )}
         <div className={styles.boardStatus} role="status">
           <b>
             {gameOver
               ? "对局结束"
               : spectator
                 ? "观战模式"
-                : thinking
-                  ? `${colorName(nextColor)}演示应手中…`
-                  : `轮到${colorName(nextColor)}`}
+                : scoring
+                  ? "死子确认中"
+                  : thinking
+                    ? `${colorName(nextColor)}演示应手中…`
+                    : `轮到${colorName(nextColor)}`}
             　·　第 {moves.length} 手
           </b>
           {!spectator && <span>{ruleNotice}</span>}
@@ -591,12 +692,12 @@ export function GameRoom({
           </div>
           <div className={styles.clocks}>
             <span
-              className={`${!gameOver && nextColor === "black" ? styles.activeClock : ""} ${clocks.black.expired ? styles.expiredClock : ""}`}
+              className={`${!gameOver && !scoring && nextColor === "black" ? styles.activeClock : ""} ${clocks.black.expired ? styles.expiredClock : ""}`}
             >
               <b>黑方</b>　{formatGameClock(clocks.black)}
             </span>
             <span
-              className={`${!gameOver && nextColor === "white" ? styles.activeClock : ""} ${clocks.white.expired ? styles.expiredClock : ""}`}
+              className={`${!gameOver && !scoring && nextColor === "white" ? styles.activeClock : ""} ${clocks.white.expired ? styles.expiredClock : ""}`}
             >
               <b>白方</b>　{formatGameClock(clocks.white)}
             </span>
@@ -604,7 +705,13 @@ export function GameRoom({
           <div className={styles.ruleStats}>
             <span>黑提 {captures.black} 子</span>
             <span>白提 {captures.white} 子</span>
-            <span>{position.consecutivePasses ? `连续停着 ${position.consecutivePasses}` : "禁自杀 · 简单劫"}</span>
+            <span>
+              {scoring
+                ? `死子 ${deadKeys.size} · 待确认`
+                : position.consecutivePasses
+                  ? `连续停着 ${position.consecutivePasses}`
+                  : "禁自杀 · 简单劫"}
+            </span>
           </div>
         </section>
 
@@ -646,9 +753,11 @@ export function GameRoom({
           ) : (
             <div className={styles.moves} aria-live="polite">
               {moves.slice(-10).map((move, index) => (
-                <p key={`${moves.length - Math.min(10, moves.length) + index}-${coordinate(move)}`}>
+                <p
+                  key={`${moves.length - Math.min(10, moves.length) + index}-${coordinate(move, boardSize)}`}
+                >
                   第 {moves.length - Math.min(10, moves.length) + index + 1} 手　
-                  {move.color === "black" ? "黑" : "白"}　{coordinate(move)}
+                  {move.color === "black" ? "黑" : "白"}　{coordinate(move, boardSize)}
                   {move.captured ? `　提${move.captured}子` : ""}
                 </p>
               ))}
@@ -658,25 +767,36 @@ export function GameRoom({
         </section>
 
         <div className={styles.gameActions}>
-          {!spectator && !gameOver && (
-            <>
-              <button type="button" onClick={pass} disabled={thinking}>
-                停一手
-              </button>
-              <button type="button" onClick={requestUndo} disabled={thinking || positions.length <= 1}>
-                请求悔棋
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (window.confirm("确定认输并结束本局吗？")) resign();
-                }}
-                disabled={thinking}
-              >
-                认输
-              </button>
-            </>
-          )}
+          {!spectator &&
+            !gameOver &&
+            (scoring ? (
+              <>
+                <button type="button" onClick={confirmScore}>
+                  确认数目
+                </button>
+                <button type="button" onClick={resumePlay}>
+                  恢复行棋
+                </button>
+              </>
+            ) : (
+              <>
+                <button type="button" onClick={pass} disabled={thinking}>
+                  停一手
+                </button>
+                <button type="button" onClick={requestUndo} disabled={thinking || positions.length <= 1}>
+                  请求悔棋
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm("确定认输并结束本局吗？")) resign();
+                  }}
+                  disabled={thinking}
+                >
+                  认输
+                </button>
+              </>
+            ))}
           <button type="button" onClick={() => setPrivateOpen(true)}>
             和对手聊聊
           </button>

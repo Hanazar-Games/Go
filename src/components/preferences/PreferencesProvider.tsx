@@ -88,13 +88,14 @@ class AudioEngine {
 
   startBgm() {
     if (this.bgmTimer !== null) return;
-    const melody = [262, 330, 392, 330, 294, 349, 440, 349];
+    const melody: Array<number | null> = [262, 330, null, 392, 330, null, 294, 349, null, 440, 349, null];
     const playNote = () => {
-      this.tone(melody[this.note % melody.length] ?? 262, 0.34, 0.026, "triangle");
+      const frequency = melody[this.note % melody.length];
+      if (frequency) this.tone(frequency, 0.28, 0.014, "triangle");
       this.note += 1;
     };
     playNote();
-    this.bgmTimer = window.setInterval(playNote, 920);
+    this.bgmTimer = window.setInterval(playNote, 1380);
   }
 
   stopBgm() {

@@ -195,18 +195,19 @@
   display: grid;
   min-height: 632px;
   place-items: center;
-  background: radial-gradient(circle, #e9e5cc, #c8c2a1);
+  background-color: #c8c4aa;
+  background-image: repeating-linear-gradient(0deg, #fff2 0 1px, transparent 1px 4px);
 }
 .matchWindow {
   width: 520px;
   border: 4px outset #d5d5cf;
   background: #d4d0c8;
-  box-shadow: 6px 8px 14px #56492e77;
+  box-shadow: 3px 4px 0 #6d695c;
 }
 .matchWindow > header {
   height: 35px;
   padding: 7px 10px;
-  background: linear-gradient(90deg, #061b83, #2b68d2);
+  background: linear-gradient(90deg, #000080 0 58%, #1084d0 100%);
   color: white;
   font-size: 17px;
   font-weight: 700;
@@ -224,7 +225,7 @@
   place-items: center;
   transform: rotate(-5deg);
   border: 6px ridge #d19730;
-  border-radius: 44%;
+  border-radius: 0;
   background: #d3a038;
   color: #4b230c;
   font-size: 31px;
@@ -255,7 +256,7 @@
   margin-top: 8px;
   padding: 8px;
   border: 4px outset #dce5e8;
-  background: linear-gradient(#e8eff0, #397fac 58%, #174a77);
+  background: linear-gradient(#e7eeee 0 23%, #648fa7 24% 56%, #285b7c 57% 100%);
   color: white;
   text-align: center;
 }
@@ -280,7 +281,7 @@
 }
 .infoPage section {
   margin-top: 8px;
-  padding: 14px 20px;
+  padding: 10px 16px;
   border: 3px ridge #aaa58c;
   background: #eeeacf;
   line-height: 1.7;
@@ -318,8 +319,20 @@
   background: white;
 }
 .settingsForm input[type="range"] {
+  height: 6px;
   width: 180px;
+  appearance: none;
+  border: 2px inset #ddd;
+  background: #f2f0df;
   accent-color: #174582;
+}
+.settingsForm input[type="range"]::-webkit-slider-thumb {
+  width: 14px;
+  height: 20px;
+  appearance: none;
+  border: 2px outset #eee;
+  border-radius: 0;
+  background: #c0c0c0;
 }
 .settingsForm button {
   margin: 15px 8px 0 0;

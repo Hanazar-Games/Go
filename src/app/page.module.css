@@ -63,9 +63,9 @@
   display: grid;
   place-items: center;
   border: 4px outset #b8ccda;
-  background: linear-gradient(#e7f1f4, #2e82b4 58%, #154b79);
+  background: linear-gradient(#e7eeee 0 23%, #648fa7 24% 56%, #285b7c 57% 100%);
   color: white;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   text-shadow: 1px 1px #10274b;
 }

@@ -4,6 +4,12 @@ export interface BoardGeometry {
   spacing: number;
 }
 
+const coordinateLetters = "ABCDEFGHJKLMNOPQRST";
+
+export function formatGoCoordinate(point: { x: number; y: number }, size: number) {
+  return `${coordinateLetters[point.x] ?? "?"}${size - point.y}`;
+}
+
 export function getBoardGeometry(width: number, height: number, size: number): BoardGeometry {
   const span = Math.max(1, Math.min(width - 70, height - 72));
   return {

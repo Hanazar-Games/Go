@@ -48,6 +48,23 @@
   margin-right: 6px;
   color: #397849;
 }
+.scoringBar {
+  position: absolute;
+  z-index: 5;
+  right: 8px;
+  bottom: 34px;
+  left: 8px;
+  min-height: 31px;
+  padding: 6px 10px;
+  border: 3px outset #e9dfae;
+  background: #fff1a8;
+  color: #4f3b16;
+  font-size: 12px;
+  text-align: center;
+}
+.scoringBar b {
+  color: #8d2822;
+}
 .sidebar {
   display: grid;
   grid-template-rows: 252px minmax(0, 1fr) auto;
@@ -161,7 +178,9 @@
   border: 2px inset #dcb670;
   background: #b57634;
   color: #fff1c3;
-  font: 13px SimSun, serif;
+  font:
+    13px SimSun,
+    serif;
 }
 .clocks span {
   padding: 5px;
@@ -297,7 +316,7 @@
   min-height: 36px;
   padding: 5px;
   border: 3px outset #acc2d7;
-  background: linear-gradient(#e6f2f7, #247dae 57%, #103f72);
+  background: linear-gradient(#e7eeee 0 23%, #648fa7 24% 56%, #285b7c 57% 100%);
   color: white;
   text-align: center;
   text-shadow: 1px 1px #0c2458;
@@ -324,7 +343,7 @@
   align-items: center;
   padding: 3px 5px 3px 11px;
   border-bottom: 2px outset #ddd;
-  background: linear-gradient(90deg, #031a83, #154cc8 62%, #2d69d9);
+  background: linear-gradient(90deg, #000080 0 58%, #1084d0 100%);
   color: white;
   font-size: 17px;
 }
