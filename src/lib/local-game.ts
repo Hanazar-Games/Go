@@ -26,7 +26,7 @@ export function parseLocalGameRoom(params: URLSearchParams): Room | undefined {
   const komi = Number(params.get("komi"));
   const timeControl = params.get("time") ?? "";
   if (!Number.isSafeInteger(id) || id < 1 || !boardSizes.has(boardSize) || !rules) return undefined;
-  if (!Number.isFinite(komi) || komi < 0 || komi > 99) return undefined;
+  if (!Number.isFinite(komi) || komi < 0 || komi > 99 || !Number.isInteger(komi * 2)) return undefined;
   try {
     parseTimeControl(timeControl);
   } catch {

@@ -1,4 +1,4 @@
-import type { Announcement, ChatMessage, GameSummary, Player, Room, Stone } from "@/types/site";
+import type { Announcement, ChatMessage, GameSummary, Player, Room } from "@/types/site";
 import { RELEASE_TITLE, SITE_VERSION } from "@/lib/release";
 
 export const siteStats = {
@@ -12,13 +12,13 @@ export const announcements: Announcement[] = [
   {
     type: "公告",
     text: RELEASE_TITLE,
-    date: "08-10",
+    date: "08-12",
     version: SITE_VERSION,
     details: [
-      "连续停着后进入死子整组标记，可确认数目或恢复行棋",
-      "修正棋盘纵坐标方向，补齐后台计时追赶和 SGF 主时、读秒、Pass、超时字段",
-      "进一步压低字号和亮面渐变，强化 Win98、IE5 式硬边框与高密度状态信息",
-      "修复 1024×768 页面滚动，背景乐调整为带休止的低音量 MIDI 节奏",
+      "棋谱回放改为逐手通过气、提子、禁自杀和简单劫校验的合法演示棋局",
+      "修复建房零读秒、负贴目和超长主时，强化本地房间参数边界",
+      "统一状态栏与聊天的北京时间，修复零音量残留增益和音频恢复异常",
+      "复验终局死子、恢复行棋、键盘落子、悔棋与多分辨率复古布局",
     ],
   },
   { type: "系统", text: "服务器将于周一凌晨 03:00 例行维护", date: "08-08" },
@@ -27,6 +27,18 @@ export const announcements: Announcement[] = [
 ];
 
 export const historicalAnnouncements: Announcement[] = [
+  {
+    type: "公告",
+    text: "围达网 0.8.0 终局怀旧强化版上线",
+    date: "2026-08-10",
+    version: "0.8.0",
+    details: [
+      "连续停着后进入死子整组标记，可确认数目或恢复行棋",
+      "修正棋盘纵坐标方向，补齐后台计时追赶和 SGF 主时、读秒、Pass、超时字段",
+      "进一步压低字号和亮面渐变，强化 Win98、IE5 式硬边框与高密度状态信息",
+      "修复 1024×768 页面滚动，背景乐调整为带休止的低音量 MIDI 节奏",
+    ],
+  },
   {
     type: "公告",
     text: "围达网 0.7.0 房间棋钟体验版上线",
@@ -433,25 +445,3 @@ export const lobbyMessages: ChatMessage[] = [
   { time: "11:50:03", name: "两只耳朵竖起来", text: "褚赢战胜了中国围棋第一人……" },
   { time: "11:50:04", name: "大宝最美", text: "这局棋未来很难有人超越了。" },
 ];
-
-export const createEndgameStones = (): Stone[] => {
-  const stones: Stone[] = [];
-  const clearings = [
-    [3, 4, 2.4],
-    [9, 7, 2.8],
-    [15, 11, 2.2],
-    [7, 16, 1.8],
-  ];
-  for (let y = 0; y < 19; y += 1) {
-    for (let x = 0; x < 19; x += 1) {
-      const hash = (x * 41 + y * 67 + x * y * 13 + 17) % 100;
-      const cleared = clearings.some(([cx, cy, radius]) => Math.hypot(x - cx, y - cy) < radius);
-      if (cleared ? hash > 83 : hash > 51) continue;
-      const territory = Math.sin(x * 0.82) + Math.cos(y * 0.71) + Math.sin((x + y) * 0.39);
-      stones.push({ x, y, color: territory + (hash % 7) / 10 > 0.25 ? "white" : "black" });
-    }
-  }
-  return stones
-    .filter(({ x, y }) => !(x === 7 && y === 15))
-    .concat({ x: 7, y: 15, color: "white", last: true });
-};

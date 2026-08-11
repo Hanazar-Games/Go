@@ -4,8 +4,9 @@ import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { usePreferences } from "@/components/preferences/PreferencesProvider";
 import { Avatar } from "@/components/ui/Avatar";
-import { createEndgameStones, lobbyMessages, players } from "@/data/mock";
+import { lobbyMessages, players } from "@/data/mock";
 import { formatGoCoordinate } from "@/lib/board";
+import { createDemoGame } from "@/lib/demo-game";
 import {
   adjudicateDeadStones,
   boardHash,
@@ -26,6 +27,7 @@ import {
 } from "@/lib/game-clock";
 import { SITE_VERSION } from "@/lib/release";
 import { buildSgf } from "@/lib/sgf";
+import { formatSiteTime } from "@/lib/site-time";
 import type { BoardSize, ChatMessage, Room, Stone } from "@/types/site";
 import { GoBoard } from "./GoBoard";
 import styles from "./GameRoom.module.css";
@@ -67,17 +69,25 @@ function coordinate(move: GameMove, size: number) {
 const opposite = (color: GoColor): GoColor => (color === "black" ? "white" : "black");
 const colorName = (color: GoColor) => (color === "black" ? "黑方" : "白方");
 
-function startingPosition(size: BoardSize, fresh: boolean, userColor: GoColor) {
-  if (fresh) {
-    if (userColor === "black") return [];
-    const starLine = size === 9 ? 2 : 3;
-    return [{ x: size - 1 - starLine, y: starLine, color: "black", last: true } satisfies Stone];
-  }
-  return createEndgameStones().filter(({ x, y }) => x < size && y < size);
+function startingPosition(size: BoardSize, userColor: GoColor) {
+  if (userColor === "black") return [];
+  const starLine = size === 9 ? 2 : 3;
+  return [{ x: size - 1 - starLine, y: starLine, color: "black", last: true } satisfies Stone];
 }
 
 function createInitialPosition(size: BoardSize, fresh: boolean, userColor: GoColor): PositionState {
-  const stones = startingPosition(size, fresh, userColor);
+  if (!fresh) {
+    const demo = createDemoGame(size);
+    return {
+      stones: demo.stones,
+      moves: demo.moves,
+      nextColor: demo.nextColor,
+      captures: demo.captures,
+      consecutivePasses: 0,
+      hashes: demo.hashes,
+    };
+  }
+  const stones = startingPosition(size, userColor);
   const hash = boardHash(stones, size);
   return {
     stones,
@@ -189,7 +199,7 @@ export function GameRoom({
   const [winnerColor, setWinnerColor] = useState<GoColor | null>(finished ? "white" : null);
   const [sgfResult, setSgfResult] = useState(finished ? "W+R" : "?");
   const [ruleNotice, setRuleNotice] = useState(
-    fresh ? `${colorName(userColor)}（访客棋手）请落子` : "棋局资料已载入",
+    fresh ? `${colorName(userColor)}（访客棋手）请落子` : "合法静态演示盘面已载入",
   );
   const [clocks, setClocks] = useState<Record<GoColor, GameClock>>(() => ({
     black: parseTimeControl(room?.timeControl ?? "20分+3×30秒"),
@@ -368,7 +378,7 @@ export function GameRoom({
     setMessages((current) => [
       ...current,
       {
-        time: new Date().toLocaleTimeString("zh-CN", { hour12: false }),
+        time: formatSiteTime(),
         name: spectator ? "观战棋友" : "访客棋手",
         text,
       },
@@ -387,7 +397,7 @@ export function GameRoom({
       ...current,
       {
         name: spectator ? "观战棋友" : "访客棋手",
-        time: new Date().toLocaleTimeString("zh-CN", { hour12: false }),
+        time: formatSiteTime(),
         text,
       },
     ]);
@@ -539,8 +549,10 @@ export function GameRoom({
       ),
     );
     link.download = `围达网-${id}号棋局.sgf`;
+    document.body.append(link);
     link.click();
-    window.setTimeout(() => URL.revokeObjectURL(link.href), 0);
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
   }
 
   return (
@@ -574,7 +586,7 @@ export function GameRoom({
                   : thinking
                     ? `${colorName(nextColor)}演示应手中…`
                     : `轮到${colorName(nextColor)}`}
-            　·　第 {moves.length} 手
+            　·　{fresh ? "第" : "演示第"} {moves.length} 手
           </b>
           {!spectator && <span>{ruleNotice}</span>}
         </div>
@@ -756,7 +768,7 @@ export function GameRoom({
                 <p
                   key={`${moves.length - Math.min(10, moves.length) + index}-${coordinate(move, boardSize)}`}
                 >
-                  第 {moves.length - Math.min(10, moves.length) + index + 1} 手　
+                  {fresh ? "第" : "演示第"} {moves.length - Math.min(10, moves.length) + index + 1} 手　
                   {move.color === "black" ? "黑" : "白"}　{coordinate(move, boardSize)}
                   {move.captured ? `　提${move.captured}子` : ""}
                 </p>

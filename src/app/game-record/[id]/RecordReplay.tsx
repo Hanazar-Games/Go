@@ -4,18 +4,17 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { GoBoard } from "@/components/game/GoBoard";
 import { usePreferences } from "@/components/preferences/PreferencesProvider";
-import { createEndgameStones } from "@/data/mock";
+import { createDemoGame } from "@/lib/demo-game";
 import type { GameSummary, Room } from "@/types/site";
 import styles from "@/components/portal/PortalPages.module.css";
 
 export function RecordReplay({ id, game, room }: { id: string; game?: GameSummary; room?: Room }) {
   const { playSound } = usePreferences();
   const boardSize = game?.boardSize ?? room?.boardSize ?? 19;
-  const allMoves = useMemo(
-    () => createEndgameStones().filter(({ x, y }) => x < boardSize && y < boardSize),
-    [boardSize],
-  );
+  const replay = useMemo(() => createDemoGame(boardSize), [boardSize]);
+  const allMoves = replay.moves;
   const [move, setMove] = useState(allMoves.length);
+  const shownMove = Math.min(move, allMoves.length);
   const [playing, setPlaying] = useState(false);
   useEffect(() => {
     if (!playing || move >= allMoves.length) return;
@@ -30,11 +29,7 @@ export function RecordReplay({ id, game, room }: { id: string; game?: GameSummar
   return (
     <main className={styles.recordPage}>
       <section className={styles.recordBoard}>
-        <GoBoard
-          stones={allMoves.slice(0, move).map((stone, index) => ({ ...stone, last: index === move - 1 }))}
-          size={boardSize}
-          readOnly
-        />
+        <GoBoard stones={replay.positions[shownMove]} size={boardSize} readOnly />
       </section>
       <aside className={styles.recordSide}>
         <div className={styles.title}>
@@ -65,24 +60,24 @@ export function RecordReplay({ id, game, room }: { id: string; game?: GameSummar
           <div>
             <dt>当前：</dt>
             <dd aria-live="polite">
-              第 {move} / {allMoves.length} 手
+              演示第 {shownMove} / {allMoves.length} 手
             </dd>
           </div>
         </dl>
         <div className={styles.replayControls}>
           <button
             type="button"
-            disabled={move === 0}
+            disabled={shownMove === 0}
             onClick={() => {
               setPlaying(false);
               setMove(0);
             }}
           >
-            第一手
+            回到开局
           </button>
           <button
             type="button"
-            disabled={move === 0}
+            disabled={shownMove === 0}
             onClick={() => {
               setPlaying(false);
               setMove((value) => Math.max(0, value - 1));
@@ -105,7 +100,7 @@ export function RecordReplay({ id, game, room }: { id: string; game?: GameSummar
           </button>
           <button
             type="button"
-            disabled={move >= allMoves.length}
+            disabled={shownMove >= allMoves.length}
             onClick={() => {
               setPlaying(false);
               setMove((value) => Math.min(allMoves.length, value + 1));
@@ -116,7 +111,7 @@ export function RecordReplay({ id, game, room }: { id: string; game?: GameSummar
           </button>
           <button
             type="button"
-            disabled={move >= allMoves.length}
+            disabled={shownMove >= allMoves.length}
             onClick={() => {
               setPlaying(false);
               setMove(allMoves.length);
@@ -129,7 +124,7 @@ export function RecordReplay({ id, game, room }: { id: string; game?: GameSummar
           <Link href="/hall">返回对弈大厅</Link>
           <Link href="/games">返回棋谱大厅</Link>
         </div>
-        <p>变化图与 KataGo 分析接口已在架构中预留，将在后续阶段接入。</p>
+        <p>当前展示合法着法组成的静态演示棋谱；完整原局与 KataGo 分析将在后端阶段接入。</p>
       </aside>
     </main>
   );

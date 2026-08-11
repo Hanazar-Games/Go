@@ -14,7 +14,19 @@ export function validateRoomInput(value: unknown): CreateRoomInput {
   const komi = Number(input.komi);
   const mainTime = Number(input.mainTime);
   const byoyomi = Number(input.byoyomi);
-  if (![komi, mainTime, byoyomi].every(Number.isFinite) || mainTime < 0 || byoyomi < 0) {
+  if (
+    ![komi, mainTime, byoyomi].every(Number.isFinite) ||
+    komi < 0 ||
+    komi > 99 ||
+    !Number.isInteger(komi * 2) ||
+    !Number.isSafeInteger(mainTime) ||
+    mainTime < 0 ||
+    mainTime > 1440 ||
+    !Number.isSafeInteger(byoyomi) ||
+    byoyomi < 0 ||
+    byoyomi > 3600 ||
+    (mainTime > 0 && byoyomi < 1)
+  ) {
     throw new Error("时间或贴目参数无效");
   }
   return {

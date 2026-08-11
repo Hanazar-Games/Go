@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { PreferencesProvider, usePreferences } from "@/components/preferences/PreferencesProvider";
 import { siteStats } from "@/data/mock";
 import { SITE_VERSION } from "@/lib/release";
+import { formatSiteTime } from "@/lib/site-time";
 import styles from "./SiteShell.module.css";
 
 const portalLinks = [
@@ -35,7 +36,7 @@ function SiteFrame({ children }: { children: ReactNode }) {
   const crisp = preferences.quality === "清晰";
 
   useEffect(() => {
-    const update = () => setClock(new Date().toLocaleTimeString("zh-CN", { hour12: false }));
+    const update = () => setClock(formatSiteTime());
     update();
     const timer = window.setInterval(update, 1000);
     return () => window.clearInterval(timer);

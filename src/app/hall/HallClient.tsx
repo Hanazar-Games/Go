@@ -11,6 +11,7 @@ import { filterPlayers, filterRooms } from "@/lib/filters";
 import { MATCH_DEMO_ID } from "@/lib/game-data";
 import { buildLocalGameHref } from "@/lib/local-game";
 import { createRoom } from "@/lib/room-store";
+import { formatSiteTime } from "@/lib/site-time";
 import type { BoardSize, ChatMessage, Player, PlayerStatus, Room, RoomStatus } from "@/types/site";
 import styles from "./hall.module.css";
 
@@ -157,10 +158,7 @@ export function HallClient({
     const input = form.elements.namedItem("hallMessage") as HTMLInputElement;
     const text = input.value.trim();
     if (!text) return;
-    setHallMessages((current) => [
-      ...current,
-      { time: new Date().toLocaleTimeString("zh-CN", { hour12: false }), name: "访客棋手", text },
-    ]);
+    setHallMessages((current) => [...current, { time: formatSiteTime(), name: "访客棋手", text }]);
     form.reset();
     setNotice("消息已加入本地大厅记录；账号服务接入后才会同步给其他棋友。");
     playSound("message");

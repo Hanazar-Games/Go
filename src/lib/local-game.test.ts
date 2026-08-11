@@ -39,5 +39,10 @@ describe("local game links", () => {
   it("rejects incomplete or altered room parameters", () => {
     expect(parseLocalGameRoom(new URLSearchParams("local=1&room=2400&board=10"))).toBeUndefined();
     expect(parseLocalGameRoom(new URLSearchParams("local=0&room=2400&board=9"))).toBeUndefined();
+    expect(
+      parseLocalGameRoom(
+        new URLSearchParams("local=1&room=2400&board=9&rules=cn&komi=-0.5&time=10分%2B3×20秒"),
+      ),
+    ).toBeUndefined();
   });
 });

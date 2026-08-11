@@ -10,7 +10,8 @@ describe("release data", () => {
   });
 
   it("moves previous release notices into history", () => {
-    expect(announcements.some(({ version }) => version === "0.7.0")).toBe(false);
+    expect(announcements.some(({ version }) => version === "0.8.0")).toBe(false);
+    expect(historicalAnnouncements.some(({ version }) => version === "0.8.0")).toBe(true);
     expect(historicalAnnouncements.some(({ version }) => version === "0.7.0")).toBe(true);
   });
 });

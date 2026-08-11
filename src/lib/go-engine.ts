@@ -108,7 +108,7 @@ export function playMove({
   const board = new Map(stones.map((stone) => [pointKey(stone), { ...stone, last: false }]));
   const key = pointKey(point);
   if (board.has(key)) return { ok: false, reason: "occupied" };
-  board.set(key, { ...point, color, last: true });
+  board.set(key, { x: point.x, y: point.y, color, last: true });
 
   let captured = 0;
   const checked = new Set<string>();

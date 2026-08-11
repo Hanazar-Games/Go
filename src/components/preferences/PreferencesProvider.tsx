@@ -19,7 +19,7 @@ class AudioEngine {
     const AudioContextConstructor = window.AudioContext;
     if (typeof AudioContextConstructor !== "function") return;
     if (!this.context) this.context = new AudioContextConstructor();
-    if (this.context.state === "suspended") void this.context.resume();
+    if (this.context.state === "suspended") void this.context.resume().catch(() => undefined);
   }
 
   setVolume(volume: number) {
@@ -33,7 +33,7 @@ class AudioEngine {
     wave: OscillatorType = "square",
     volume = this.volume,
   ) {
-    if (!this.context || this.context.state === "closed") return;
+    if (!this.context || this.context.state === "closed" || volume <= 0) return;
     const oscillator = this.context.createOscillator();
     const gain = this.context.createGain();
     const now = this.context.currentTime;
@@ -88,6 +88,7 @@ class AudioEngine {
 
   startBgm() {
     if (this.bgmTimer !== null) return;
+    this.activate();
     const melody: Array<number | null> = [262, 330, null, 392, 330, null, 294, 349, null, 440, 349, null];
     const playNote = () => {
       const frequency = melody[this.note % melody.length];
