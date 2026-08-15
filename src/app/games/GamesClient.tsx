@@ -21,9 +21,12 @@ export function GamesClient() {
   const [playerQuery, setPlayerQuery] = useState(initialPlayer);
   const [boardQuery, setBoardQuery] = useState(initialBoard);
   const [resultQuery, setResultQuery] = useState(initialResult);
+  const normalizedPlayer = playerQuery.trim().toLocaleLowerCase("zh-CN");
   const games = [...hotGames, ...recentGames].filter((game) => {
     const matchesPlayer =
-      !playerQuery || game.black.includes(playerQuery) || game.white.includes(playerQuery);
+      !normalizedPlayer ||
+      game.black.toLocaleLowerCase("zh-CN").includes(normalizedPlayer) ||
+      game.white.toLocaleLowerCase("zh-CN").includes(normalizedPlayer);
     const matchesBoard = boardQuery === "全部" || game.boardSize === Number(boardQuery);
     const matchesResult =
       resultQuery === "全部" ||
@@ -33,8 +36,10 @@ export function GamesClient() {
 
   function submitFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const player = playerQuery.trim();
+    setPlayerQuery(player);
     const query = new URLSearchParams();
-    if (playerQuery) query.set("player", playerQuery);
+    if (player) query.set("player", player);
     if (boardQuery !== "全部") query.set("board", boardQuery);
     if (resultQuery !== "全部") query.set("result", resultQuery);
     router.replace(query.size ? `/games?${query}` : "/games");

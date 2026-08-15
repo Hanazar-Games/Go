@@ -15,7 +15,7 @@ export default function AboutPage() {
         </p>
       </section>
       <section>
-        <h2>{SITE_VERSION} 怀旧体验版内容</h2>
+        <h2>{SITE_VERSION} 正式版内容</h2>
         <ul>
           <li>围棋门户首页、对弈大厅、房间创建和快速匹配流程</li>
           <li>Canvas 棋盘、合法落子、提子、简单劫、死子确认、终局数目、观战和 SGF 下载</li>

@@ -1,22 +1,52 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { usePreferences } from "@/components/preferences/PreferencesProvider";
+import type { SitePreferences } from "@/lib/preferences";
 import styles from "@/components/portal/PortalPages.module.css";
+
+type PreferenceField =
+  "quality" | "boardSize" | "rules" | "bgm" | "moveSound" | "interfaceSound" | "volume" | "allowChallenges";
+
+function mergePreferenceDraft(
+  draft: SitePreferences,
+  preferences: SitePreferences,
+  dirty: ReadonlySet<PreferenceField>,
+): SitePreferences {
+  const keep = (field: PreferenceField) => dirty.has(field);
+  return {
+    quality: keep("quality") ? draft.quality : preferences.quality,
+    boardSize: keep("boardSize") ? draft.boardSize : preferences.boardSize,
+    rules: keep("rules") ? draft.rules : preferences.rules,
+    allowChallenges: keep("allowChallenges") ? draft.allowChallenges : preferences.allowChallenges,
+    audio: {
+      bgm: keep("bgm") ? draft.audio.bgm : preferences.audio.bgm,
+      moveSound: keep("moveSound") ? draft.audio.moveSound : preferences.audio.moveSound,
+      interfaceSound: keep("interfaceSound") ? draft.audio.interfaceSound : preferences.audio.interfaceSound,
+      volume: keep("volume") ? draft.audio.volume : preferences.audio.volume,
+    },
+  };
+}
 
 export function SettingsForm() {
   const { preferences, savePreferences, playSound, previewSound } = usePreferences();
   const [draft, setDraft] = useState(preferences);
   const [saved, setSaved] = useState(false);
+  const dirtyFieldsRef = useRef<Set<PreferenceField>>(new Set());
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => setDraft(preferences));
+    const frame = window.requestAnimationFrame(() => {
+      setDraft((current) => mergePreferenceDraft(current, preferences, dirtyFieldsRef.current));
+    });
     return () => window.cancelAnimationFrame(frame);
   }, [preferences]);
 
   function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    savePreferences(draft);
+    const next = mergePreferenceDraft(draft, preferences, dirtyFieldsRef.current);
+    savePreferences(next);
+    setDraft(next);
+    dirtyFieldsRef.current.clear();
     playSound("success");
     setSaved(true);
   }
@@ -26,17 +56,27 @@ export function SettingsForm() {
       <header>围达网设置</header>
       <section>
         <h2>显示、对局与声音偏好</h2>
-        <form className={styles.settingsForm} onSubmit={save}>
+        <form
+          className={styles.settingsForm}
+          onSubmit={save}
+          onChange={(event) => {
+            const target = event.target;
+            if (target instanceof HTMLInputElement || target instanceof HTMLSelectElement) {
+              dirtyFieldsRef.current.add(target.name as PreferenceField);
+            }
+            setSaved(false);
+          }}
+        >
           <label>
             <span>画面效果：</span>
             <select
+              name="quality"
               value={draft.quality}
               onChange={(event) => {
                 setDraft((current) => ({
                   ...current,
                   quality: event.target.value === "清晰" ? "清晰" : "怀旧",
                 }));
-                setSaved(false);
               }}
             >
               <option>怀旧</option>
@@ -46,10 +86,10 @@ export function SettingsForm() {
           <label>
             <span>建房默认棋盘：</span>
             <select
+              name="boardSize"
               value={draft.boardSize}
               onChange={(event) => {
                 setDraft((current) => ({ ...current, boardSize: Number(event.target.value) as 9 | 13 | 19 }));
-                setSaved(false);
               }}
             >
               <option value="19">19×19</option>
@@ -60,13 +100,13 @@ export function SettingsForm() {
           <label>
             <span>建房默认规则：</span>
             <select
+              name="rules"
               value={draft.rules}
               onChange={(event) => {
                 setDraft((current) => ({
                   ...current,
                   rules: event.target.value === "日本规则" ? "日本规则" : "中国规则",
                 }));
-                setSaved(false);
               }}
             >
               <option>中国规则</option>
@@ -76,13 +116,13 @@ export function SettingsForm() {
           <label>
             <input
               type="checkbox"
+              name="bgm"
               checked={draft.audio.bgm}
               onChange={(event) => {
                 setDraft((current) => ({
                   ...current,
                   audio: { ...current.audio, bgm: event.target.checked },
                 }));
-                setSaved(false);
               }}
             />
             低音量 MIDI 背景乐（首次操作后播放）
@@ -90,13 +130,13 @@ export function SettingsForm() {
           <label>
             <input
               type="checkbox"
+              name="moveSound"
               checked={draft.audio.moveSound}
               onChange={(event) => {
                 setDraft((current) => ({
                   ...current,
                   audio: { ...current.audio, moveSound: event.target.checked },
                 }));
-                setSaved(false);
               }}
             />
             落子声音
@@ -104,13 +144,13 @@ export function SettingsForm() {
           <label>
             <input
               type="checkbox"
+              name="interfaceSound"
               checked={draft.audio.interfaceSound}
               onChange={(event) => {
                 setDraft((current) => ({
                   ...current,
                   audio: { ...current.audio, interfaceSound: event.target.checked },
                 }));
-                setSaved(false);
               }}
             />
             按钮与消息提示音
@@ -119,6 +159,7 @@ export function SettingsForm() {
             <span>音量：</span>
             <input
               type="range"
+              name="volume"
               min="0"
               max="100"
               step="1"
@@ -128,7 +169,6 @@ export function SettingsForm() {
                   ...current,
                   audio: { ...current.audio, volume: Number(event.target.value) },
                 }));
-                setSaved(false);
               }}
             />
             <output>{draft.audio.volume}%</output>
@@ -136,10 +176,10 @@ export function SettingsForm() {
           <label>
             <input
               type="checkbox"
+              name="allowChallenges"
               checked={draft.allowChallenges}
               onChange={(event) => {
                 setDraft((current) => ({ ...current, allowChallenges: event.target.checked }));
-                setSaved(false);
               }}
             />
             允许陌生人挑战（本机偏好，账号接入后同步）

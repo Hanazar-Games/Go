@@ -3,5 +3,6 @@ dist/
 .next/
 out/
 coverage/
+*.tsbuildinfo
 .env*.local
 .DS_Store

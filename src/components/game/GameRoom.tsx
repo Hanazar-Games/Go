@@ -285,6 +285,7 @@ export function GameRoom({
         { time: "系统", name: "系统", text: `${colorName(nextColor)}用时耗尽，对局结束。`, system: true },
       ]);
       setGameOver(true);
+      setPrivateOpen(false);
       setResultOpen(true);
       setRuleNotice(`${colorName(nextColor)}超时，棋钟停止`);
       playSound("success");
@@ -473,6 +474,7 @@ export function GameRoom({
     setDeadKeys(new Set());
     setScoring(false);
     setGameOver(true);
+    setPrivateOpen(false);
     setResultOpen(true);
     setRuleNotice("终局数目已确认，对局结束");
     playSound("success");
@@ -501,6 +503,7 @@ export function GameRoom({
     setResult(`${resigned === "black" ? "黑方" : "白方"}认输，${winning === "black" ? "黑方" : "白方"}胜`);
     setSgfResult(`${winning === "black" ? "B" : "W"}+R`);
     setGameOver(true);
+    setPrivateOpen(false);
     setResultOpen(true);
     setRuleNotice("对局已因认输结束");
     playSound("success");
@@ -809,7 +812,24 @@ export function GameRoom({
                 </button>
               </>
             ))}
-          <button type="button" onClick={() => setPrivateOpen(true)}>
+          {gameOver && !resultOpen && (
+            <button
+              type="button"
+              onClick={() => {
+                setPrivateOpen(false);
+                setResultOpen(true);
+              }}
+            >
+              查看比赛结果
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setResultOpen(false);
+              setPrivateOpen(true);
+            }}
+          >
             和对手聊聊
           </button>
           <button type="button" onClick={saveSgf}>

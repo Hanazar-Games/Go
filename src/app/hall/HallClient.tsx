@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { usePreferences } from "@/components/preferences/PreferencesProvider";
 import { Avatar } from "@/components/ui/Avatar";
 import { Panel } from "@/components/ui/Panel";
@@ -12,7 +12,7 @@ import { MATCH_DEMO_ID } from "@/lib/game-data";
 import { buildLocalGameHref } from "@/lib/local-game";
 import { createRoom } from "@/lib/room-store";
 import { formatSiteTime } from "@/lib/site-time";
-import type { BoardSize, ChatMessage, Player, PlayerStatus, Room, RoomStatus } from "@/types/site";
+import type { BoardSize, ChatMessage, Player, PlayerStatus, Room, RoomStatus, RuleSet } from "@/types/site";
 import styles from "./hall.module.css";
 
 const playerStatuses: Array<PlayerStatus | "全部"> = ["全部", "空闲", "对局中", "观战", "匹配中", "离开"];
@@ -27,6 +27,8 @@ function roomHref(room: Room) {
   if (!room.allowSpectators) return null;
   return `/watch/${room.id}`;
 }
+
+const defaultKomi = (rules: RuleSet) => (rules === "日本规则" ? "6.5" : "7.5");
 
 export function HallClient({
   initialPlayers,
@@ -45,11 +47,14 @@ export function HallClient({
   const [selectedPlayer, setSelectedPlayer] = useState(initialPlayers[0]?.username ?? "");
   const [selectedRoom, setSelectedRoom] = useState(initialRooms[0]?.id ?? 0);
   const [createOpen, setCreateOpen] = useState(false);
+  const [createRules, setCreateRules] = useState<RuleSet>(preferences.rules);
+  const [createKomi, setCreateKomi] = useState(defaultKomi(preferences.rules));
   const [creating, setCreating] = useState(false);
   const [notice, setNotice] = useState("");
   const [followed, setFollowed] = useState<Set<string>>(new Set());
   const [matchSeconds, setMatchSeconds] = useState<number | null>(null);
   const [hallMessages, setHallMessages] = useState(initialHallMessages);
+  const createButtonRef = useRef<HTMLButtonElement>(null);
 
   const visiblePlayers = useMemo(
     () => filterPlayers(initialPlayers, playerQuery, playerStatus),
@@ -80,11 +85,25 @@ export function HallClient({
   useEffect(() => {
     if (!createOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !creating) setCreateOpen(false);
+      if (event.key === "Escape" && !creating) {
+        setCreateOpen(false);
+        createButtonRef.current?.focus();
+      }
     };
     document.addEventListener("keydown", closeOnEscape);
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [createOpen, creating]);
+
+  function openCreateDialog() {
+    setCreateRules(preferences.rules);
+    setCreateKomi(defaultKomi(preferences.rules));
+    setCreateOpen(true);
+  }
+
+  function closeCreateDialog() {
+    setCreateOpen(false);
+    createButtonRef.current?.focus();
+  }
 
   function submitRoom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -107,7 +126,7 @@ export function HallClient({
       setSelectedRoom(room.id);
       setRoomStatus("全部");
       setBoardSize("全部");
-      setCreateOpen(false);
+      closeCreateDialog();
       setNotice(`${room.id} 号本地体验房间已创建；房主执黑，刷新大厅后房间记录会还原。`);
       playSound("success");
     } catch (error) {
@@ -477,7 +496,7 @@ export function HallClient({
           <Panel title="创建棋局">
             <div className={styles.createBox}>
               <p>自定义棋盘、规则、贴目和时间。</p>
-              <button type="button" onClick={() => setCreateOpen(true)}>
+              <button ref={createButtonRef} type="button" onClick={openCreateDialog}>
                 创建新房间
               </button>
             </div>
@@ -519,7 +538,7 @@ export function HallClient({
           >
             <header>
               <span id="create-room-title">创建新的对局室</span>
-              <button type="button" onClick={() => setCreateOpen(false)} aria-label="关闭创建房间">
+              <button type="button" onClick={closeCreateDialog} aria-label="关闭创建房间">
                 ×
               </button>
             </header>
@@ -535,14 +554,26 @@ export function HallClient({
               </label>
               <label>
                 规则：
-                <select name="rules" defaultValue={preferences.rules}>
+                <select
+                  name="rules"
+                  value={createRules}
+                  onChange={(event) => {
+                    const rules = event.target.value as RuleSet;
+                    setCreateRules(rules);
+                    setCreateKomi(defaultKomi(rules));
+                  }}
+                >
                   <option>中国规则</option>
                   <option>日本规则</option>
                 </select>
               </label>
               <label>
                 贴目：
-                <select name="komi" defaultValue="7.5">
+                <select
+                  name="komi"
+                  value={createKomi}
+                  onChange={(event) => setCreateKomi(event.target.value)}
+                >
                   <option value="7.5">黑贴 7.5 目</option>
                   <option value="6.5">黑贴 6.5 目</option>
                   <option value="0">不贴目</option>
@@ -582,7 +613,7 @@ export function HallClient({
               </label>
             </div>
             <footer>
-              <button type="button" onClick={() => setCreateOpen(false)}>
+              <button type="button" onClick={closeCreateDialog}>
                 取消
               </button>
               <button type="submit" disabled={creating}>

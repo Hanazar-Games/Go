@@ -334,7 +334,7 @@
   box-shadow: 5px 8px 12px #29221585;
 }
 .resultDialog {
-  width: min(610px, 79%);
+  width: min(610px, calc(100% - 24px));
 }
 .resultDialog > header,
 .privateDialog > header {
@@ -390,11 +390,14 @@
 }
 .resultDialog article {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 12px;
 }
 .resultDialog article > p {
   display: flex;
+  min-width: 0;
+  overflow: hidden;
   flex-direction: column;
   margin: 0;
   font-size: 17px;
@@ -409,12 +412,14 @@
   color: #a74445;
 }
 .resultDialog article b {
+  overflow: hidden;
   font-size: 22px;
   font-weight: 400;
+  text-overflow: ellipsis;
 }
 
 .privateDialog {
-  width: min(740px, 78%);
+  width: min(740px, calc(100% - 24px));
   height: min(500px, calc(100% - 20px));
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) 77px;
