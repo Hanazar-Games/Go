@@ -9,7 +9,7 @@ import {
   type SoundEffect,
 } from "@/lib/preferences";
 
-class AudioEngine {
+export class AudioEngine {
   private context: AudioContext | null = null;
   private bgmTimer: number | null = null;
   private note = 0;
@@ -95,7 +95,6 @@ class AudioEngine {
       if (frequency) this.tone(frequency, 0.28, 0.014, "triangle");
       this.note += 1;
     };
-    playNote();
     this.bgmTimer = window.setInterval(playNote, 1380);
   }
 
@@ -183,6 +182,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   }, [preferences.audio.bgm, preferences.audio.volume]);
 
   const savePreferences = useCallback((next: SitePreferences) => {
+    audioRef.current?.setVolume(next.audio.volume);
     preferencesRef.current = next;
     setPreferences(next);
     try {

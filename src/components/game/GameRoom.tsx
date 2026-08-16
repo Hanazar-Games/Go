@@ -6,6 +6,7 @@ import { usePreferences } from "@/components/preferences/PreferencesProvider";
 import { Avatar } from "@/components/ui/Avatar";
 import { lobbyMessages, players } from "@/data/mock";
 import { formatGoCoordinate } from "@/lib/board";
+import { trapDialogFocus } from "@/lib/dialog-focus";
 import { createDemoGame } from "@/lib/demo-game";
 import {
   adjudicateDeadStones,
@@ -207,6 +208,10 @@ export function GameRoom({
   }));
   const clocksRef = useRef(clocks);
   const lastClockTickRef = useRef(0);
+  const privateTriggerRef = useRef<HTMLButtonElement>(null);
+  const resultTriggerRef = useRef<HTMLButtonElement>(null);
+  const restorePrivateFocusRef = useRef(false);
+  const restoreResultFocusRef = useRef(false);
 
   const blackName = room?.host ?? "俞晓旸";
   const whiteName = room?.guest ?? (waiting && fresh ? "访客棋手" : waiting ? "等待对手" : "褚赢");
@@ -230,7 +235,6 @@ export function GameRoom({
   const loser = winnerColor === "black" ? whitePlayer : blackPlayer;
   const opponentName = userColor === "black" ? whiteName : blackName;
   const thinking = fresh && !spectator && !gameOver && !scoring && nextColor !== userColor;
-  const provisionalScore = scoring;
   const scoreUnit = room?.rules === "日本规则" ? "目" : "点";
   const scoredPosition = adjudicateDeadStones(stones, deadKeys, captures);
   const scorePreview = scorePosition(
@@ -253,11 +257,27 @@ export function GameRoom({
     if (!resultOpen && !privateOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
-      if (privateOpen) setPrivateOpen(false);
-      else setResultOpen(false);
+      if (privateOpen) {
+        restorePrivateFocusRef.current = true;
+        setPrivateOpen(false);
+      } else {
+        restoreResultFocusRef.current = true;
+        setResultOpen(false);
+      }
     };
     document.addEventListener("keydown", closeOnEscape);
     return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [privateOpen, resultOpen]);
+
+  useEffect(() => {
+    if (!privateOpen && restorePrivateFocusRef.current) {
+      restorePrivateFocusRef.current = false;
+      privateTriggerRef.current?.focus();
+    }
+    if (!resultOpen && restoreResultFocusRef.current) {
+      restoreResultFocusRef.current = false;
+      resultTriggerRef.current?.focus();
+    }
   }, [privateOpen, resultOpen]);
 
   useEffect(() => {
@@ -338,7 +358,7 @@ export function GameRoom({
   }, [boardSize, playSound, position, resetMovedClock, thinking, userColor]);
 
   function place(point: { x: number; y: number }) {
-    if (gameOver || scoring || spectator) return;
+    if (gameOver || scoring || spectator || privateOpen || resultOpen) return;
     if (nextColor !== userColor) {
       setRuleNotice(`请等待${colorName(nextColor)}演示应手`);
       playSound("error");
@@ -565,7 +585,7 @@ export function GameRoom({
           stones={stones}
           size={boardSize}
           readOnly={spectator || gameOver}
-          disabled={thinking}
+          disabled={thinking || privateOpen || resultOpen}
           markDead={scoring}
           deadStoneKeys={deadKeys}
           onMove={place}
@@ -594,15 +614,29 @@ export function GameRoom({
           {!spectator && <span>{ruleNotice}</span>}
         </div>
         {resultOpen && (
-          <div className={styles.resultDialog} role="dialog" aria-modal="true" aria-label="比赛结果">
+          <div
+            className={styles.resultDialog}
+            role="dialog"
+            aria-modal="true"
+            aria-label="比赛结果"
+            onKeyDown={trapDialogFocus}
+          >
             <header>
               <span>围达网 - 比赛结果</span>
-              <button type="button" onClick={() => setResultOpen(false)} aria-label="关闭比赛结果" autoFocus>
+              <button
+                type="button"
+                onClick={() => {
+                  restoreResultFocusRef.current = true;
+                  setResultOpen(false);
+                }}
+                aria-label="关闭比赛结果"
+                autoFocus
+              >
                 ×
               </button>
             </header>
             <div>
-              <h1>{provisionalScore ? "盘面试算" : "比赛结束"}</h1>
+              <h1>比赛结束</h1>
               <p>{result}</p>
               {winnerColor && (
                 <>
@@ -611,7 +645,7 @@ export function GameRoom({
                     <article>
                       <Avatar name={winner.name} variant={winner.variant} size="large" />
                       <p>
-                        <em>{provisionalScore ? "试算领先" : "胜方"}</em>
+                        <em>胜方</em>
                         <b>{winner.name}</b>
                         <span>
                           胜{winner.wins}　败{winner.losses}
@@ -621,7 +655,7 @@ export function GameRoom({
                     <article>
                       <Avatar name={loser.name} variant={loser.variant} size="large" />
                       <p>
-                        <em className={styles.loser}>{provisionalScore ? "试算落后" : "败方"}</em>
+                        <em className={styles.loser}>败方</em>
                         <b>{loser.name}</b>
                         <span>
                           胜{loser.wins}　败{loser.losses}
@@ -640,10 +674,18 @@ export function GameRoom({
             role="dialog"
             aria-modal="true"
             aria-label={`与${opponentName}对话`}
+            onKeyDown={trapDialogFocus}
           >
             <header>
               与 {opponentName} 对话中
-              <button type="button" onClick={() => setPrivateOpen(false)} aria-label="关闭私聊">
+              <button
+                type="button"
+                onClick={() => {
+                  restorePrivateFocusRef.current = true;
+                  setPrivateOpen(false);
+                }}
+                aria-label="关闭私聊"
+              >
                 ×
               </button>
             </header>
@@ -666,7 +708,7 @@ export function GameRoom({
         )}
       </section>
 
-      <aside className={styles.sidebar}>
+      <aside className={styles.sidebar} inert={resultOpen || privateOpen ? true : undefined}>
         <section className={styles.matchCard}>
           <div className={styles.gameMeta}>
             <b>
@@ -684,7 +726,7 @@ export function GameRoom({
                 {blackName}
                 <small>({blackPlayer.rank})</small>
               </b>
-              {gameOver && winnerColor && !provisionalScore && (
+              {gameOver && winnerColor && (
                 <span className={winnerColor === "black" ? styles.winSeal : styles.loseSeal}>
                   {winnerColor === "black" ? "胜" : "负"}
                 </span>
@@ -698,7 +740,7 @@ export function GameRoom({
                 {whiteName}
                 <small>({whitePlayer.rank})</small>
               </b>
-              {gameOver && winnerColor && !provisionalScore && (
+              {gameOver && winnerColor && (
                 <span className={winnerColor === "white" ? styles.winSeal : styles.loseSeal}>
                   {winnerColor === "white" ? "胜" : "负"}
                 </span>
@@ -814,6 +856,7 @@ export function GameRoom({
             ))}
           {gameOver && !resultOpen && (
             <button
+              ref={resultTriggerRef}
               type="button"
               onClick={() => {
                 setPrivateOpen(false);
@@ -824,6 +867,7 @@ export function GameRoom({
             </button>
           )}
           <button
+            ref={privateTriggerRef}
             type="button"
             onClick={() => {
               setResultOpen(false);

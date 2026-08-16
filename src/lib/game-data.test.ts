@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   gameRouteIds,
+  getGameSummaryHref,
   getGameSummary,
   MATCH_DEMO_ID,
   matchDemoRoom,
@@ -33,5 +34,10 @@ describe("static game routes", () => {
       result: "白胜3.5目",
     });
     expect(getGameSummary(2365)?.boardSize).toBe(9);
+  });
+
+  it("routes live games to spectating and finished games to replay", () => {
+    expect(getGameSummaryHref({ id: 2382, result: "进行中" })).toBe("/watch/2382");
+    expect(getGameSummaryHref({ id: 2371, result: "白中盘胜" })).toBe("/game-record/2371");
   });
 });

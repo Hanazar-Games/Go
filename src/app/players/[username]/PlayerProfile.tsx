@@ -66,7 +66,7 @@ export function PlayerProfile({ player }: { player: Player }) {
       {notice && (
         <div className={styles.notice} role="status">
           {notice}
-          <button type="button" onClick={() => setNotice("")}>
+          <button type="button" onClick={() => setNotice("")} aria-label="关闭系统提示">
             ×
           </button>
         </div>

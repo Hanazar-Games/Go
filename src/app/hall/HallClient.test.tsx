@@ -47,4 +47,26 @@ describe("hall room dialog", () => {
 
     expect(trigger).toHaveFocus();
   });
+
+  it("disables byo-yomi for an unlimited game", () => {
+    render(<HallClient initialPlayers={players} initialRooms={initialRooms} />);
+    fireEvent.click(screen.getByRole("button", { name: "创建新房间" }));
+
+    fireEvent.change(screen.getByLabelText("主时间："), { target: { value: "0" } });
+
+    expect(screen.getByLabelText("读秒：")).toBeDisabled();
+    expect(screen.getByText("不限时棋局不使用读秒")).toBeInTheDocument();
+  });
+
+  it("keeps keyboard focus inside the create dialog", () => {
+    render(<HallClient initialPlayers={players} initialRooms={initialRooms} />);
+    fireEvent.click(screen.getByRole("button", { name: "创建新房间" }));
+    const dialog = screen.getByRole("dialog", { name: "创建新的对局室" });
+    const submit = screen.getByRole("button", { name: "创建房间" });
+    submit.focus();
+
+    fireEvent.keyDown(dialog, { key: "Tab" });
+
+    expect(screen.getByRole("button", { name: "关闭创建房间" })).toHaveFocus();
+  });
 });

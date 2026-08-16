@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Panel } from "@/components/ui/Panel";
 import { announcements } from "@/data/mock";
 import { filterPlayers, filterRooms } from "@/lib/filters";
+import { trapDialogFocus } from "@/lib/dialog-focus";
 import { MATCH_DEMO_ID } from "@/lib/game-data";
 import { buildLocalGameHref } from "@/lib/local-game";
 import { createRoom } from "@/lib/room-store";
@@ -49,6 +50,7 @@ export function HallClient({
   const [createOpen, setCreateOpen] = useState(false);
   const [createRules, setCreateRules] = useState<RuleSet>(preferences.rules);
   const [createKomi, setCreateKomi] = useState(defaultKomi(preferences.rules));
+  const [createMainTime, setCreateMainTime] = useState("20");
   const [creating, setCreating] = useState(false);
   const [notice, setNotice] = useState("");
   const [followed, setFollowed] = useState<Set<string>>(new Set());
@@ -97,6 +99,7 @@ export function HallClient({
   function openCreateDialog() {
     setCreateRules(preferences.rules);
     setCreateKomi(defaultKomi(preferences.rules));
+    setCreateMainTime("20");
     setCreateOpen(true);
   }
 
@@ -206,7 +209,7 @@ export function HallClient({
         <div className={styles.notice} role="status">
           <b>系统：</b>
           {displayedNotice}
-          <button type="button" onClick={() => setNotice("")}>
+          <button type="button" onClick={() => setNotice("")} aria-label="关闭系统提示">
             ×
           </button>
         </div>
@@ -535,6 +538,7 @@ export function HallClient({
             aria-modal="true"
             aria-labelledby="create-room-title"
             aria-busy={creating}
+            onKeyDown={trapDialogFocus}
           >
             <header>
               <span id="create-room-title">创建新的对局室</span>
@@ -584,7 +588,11 @@ export function HallClient({
               <legend>用时设置</legend>
               <label>
                 主时间：
-                <select name="mainTime" defaultValue="20">
+                <select
+                  name="mainTime"
+                  value={createMainTime}
+                  onChange={(event) => setCreateMainTime(event.target.value)}
+                >
                   <option value="60">60 分钟</option>
                   <option value="30">30 分钟</option>
                   <option value="20">20 分钟</option>
@@ -594,13 +602,14 @@ export function HallClient({
               </label>
               <label>
                 读秒：
-                <select name="byoyomi" defaultValue="30">
+                <select name="byoyomi" defaultValue="30" disabled={createMainTime === "0"}>
                   <option value="60">60 秒</option>
                   <option value="30">30 秒</option>
                   <option value="20">20 秒</option>
                   <option value="10">10 秒</option>
                 </select>
               </label>
+              {createMainTime === "0" && <small className={styles.timeHint}>不限时棋局不使用读秒</small>}
             </fieldset>
             <div className={styles.checks}>
               <label>

@@ -1,5 +1,5 @@
 import { hotGames, initialRooms, recentGames } from "@/data/mock";
-import type { Room } from "@/types/site";
+import type { GameSummary, Room } from "@/types/site";
 
 const uniqueIds = (ids: number[]) => [...new Set(ids)].map(String);
 
@@ -41,4 +41,8 @@ export const recordRouteIds = uniqueIds([
 
 export function getGameSummary(id: number) {
   return [...hotGames, ...recentGames].find((game) => game.id === id);
+}
+
+export function getGameSummaryHref(game: Pick<GameSummary, "id" | "result">) {
+  return game.result === "进行中" ? `/watch/${game.id}` : `/game-record/${game.id}`;
 }

@@ -47,6 +47,17 @@ describe("go rules", () => {
     });
   });
 
+  it.each([
+    { x: Number.NaN, y: 1 },
+    { x: 1, y: Number.POSITIVE_INFINITY },
+    { x: 1.5, y: 2 },
+  ])("rejects a non-intersection coordinate $x,$y", (point) => {
+    expect(playMove({ stones: [], size: 19, color: "black", point })).toMatchObject({
+      ok: false,
+      reason: "out-of-board",
+    });
+  });
+
   it("allows a zero-liberty placement when it captures first", () => {
     const stones = [
       stone(1, 1, "black"),

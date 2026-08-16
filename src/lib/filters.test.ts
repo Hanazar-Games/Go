@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { players, initialRooms } from "@/data/mock";
-import { filterPlayers, filterRooms } from "./filters";
+import { filterPlayers, filterRooms, MAX_PLAYER_QUERY_LENGTH, normalizePlayerQuery } from "./filters";
 
 describe("hall filters", () => {
   it("filters players by name and status", () => {
@@ -12,5 +12,10 @@ describe("hall filters", () => {
     const rooms = filterRooms(initialRooms, "等待中", 13);
     expect(rooms).toHaveLength(1);
     expect(rooms[0]?.host).toBe("大宝最美");
+  });
+
+  it("normalizes externally supplied player queries to a safe display length", () => {
+    expect(normalizePlayerQuery("  AKIRA  ")).toBe("AKIRA");
+    expect(normalizePlayerQuery("棋".repeat(80))).toHaveLength(MAX_PLAYER_QUERY_LENGTH);
   });
 });

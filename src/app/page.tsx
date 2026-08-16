@@ -3,6 +3,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Panel } from "@/components/ui/Panel";
 import { announcements, hotGames, players, recentGames, siteStats } from "@/data/mock";
 import { RELEASE_DATE, SITE_VERSION } from "@/lib/release";
+import { getGameSummaryHref } from "@/lib/game-data";
 import styles from "./page.module.css";
 
 export default function HomePage() {
@@ -144,7 +145,9 @@ export default function HomePage() {
                     <span>第 {game.moves} 手</span>
                     <span>观战 {game.spectators}</span>
                   </div>
-                  <Link href={`/watch/${game.id}`}>{game.result === "进行中" ? "进入观战" : "回看棋局"}</Link>
+                  <Link href={getGameSummaryHref(game)}>
+                    {game.result === "进行中" ? "进入观战" : "回看棋局"}
+                  </Link>
                 </article>
               ))}
             </div>

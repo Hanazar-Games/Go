@@ -101,7 +101,14 @@ export function playMove({
   point: GoPoint;
   forbiddenHash?: string;
 }): PlayResult {
-  if (point.x < 0 || point.x >= size || point.y < 0 || point.y >= size) {
+  if (
+    !Number.isSafeInteger(point.x) ||
+    !Number.isSafeInteger(point.y) ||
+    point.x < 0 ||
+    point.x >= size ||
+    point.y < 0 ||
+    point.y >= size
+  ) {
     return { ok: false, reason: "out-of-board" };
   }
 

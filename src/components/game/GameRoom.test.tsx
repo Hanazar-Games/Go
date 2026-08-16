@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GameRoom } from "./GameRoom";
 
@@ -39,5 +39,34 @@ describe("game room dialogs", () => {
 
     expect(screen.queryByRole("dialog", { name: /对话/ })).not.toBeInTheDocument();
     expect(screen.getByRole("dialog", { name: "比赛结果" })).toBeInTheDocument();
+  });
+
+  it("traps focus in private chat and restores it to the trigger", () => {
+    render(<GameRoom id="2400" fresh userColor="black" />);
+    const trigger = screen.getByRole("button", { name: "和对手聊聊" });
+    trigger.focus();
+    fireEvent.click(trigger);
+    const dialog = screen.getByRole("dialog", { name: /对话/ });
+    const send = within(dialog).getByRole("button", { name: "发送" });
+    send.focus();
+
+    fireEvent.keyDown(dialog, { key: "Tab" });
+    expect(screen.getByRole("button", { name: "关闭私聊" })).toHaveFocus();
+
+    fireEvent.click(screen.getByRole("button", { name: "关闭私聊" }));
+    expect(trigger).toHaveFocus();
+  });
+
+  it("keeps focus in the result dialog and returns it to the result trigger", () => {
+    render(<GameRoom id="2371" />);
+    const dialog = screen.getByRole("dialog", { name: "比赛结果" });
+    const close = screen.getByRole("button", { name: "关闭比赛结果" });
+    close.focus();
+
+    fireEvent.keyDown(dialog, { key: "Tab" });
+    expect(close).toHaveFocus();
+
+    fireEvent.click(close);
+    expect(screen.getByRole("button", { name: "查看比赛结果" })).toHaveFocus();
   });
 });

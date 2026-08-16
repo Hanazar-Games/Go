@@ -516,6 +516,11 @@
   border: 2px inset #eee;
   background: white;
 }
+.timeHint {
+  grid-column: 1 / -1;
+  color: #755b2d;
+  text-align: right;
+}
 .checks {
   display: flex;
   gap: 30px;

@@ -5,11 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePreferences } from "@/components/preferences/PreferencesProvider";
 import { MATCH_DEMO_ID } from "@/lib/game-data";
+import { normalizePlayerQuery } from "@/lib/filters";
 import styles from "@/components/portal/PortalPages.module.css";
 
 export function MatchClient() {
   const router = useRouter();
-  const opponent = useSearchParams().get("opponent") ?? undefined;
+  const opponent = normalizePlayerQuery(useSearchParams().get("opponent") ?? "") || undefined;
   const { playSound } = usePreferences();
   const [searching, setSearching] = useState(false);
   const [seconds, setSeconds] = useState(0);

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { hotGames, recentGames } from "@/data/mock";
+import { MAX_PLAYER_QUERY_LENGTH, normalizePlayerQuery } from "@/lib/filters";
+import { getGameSummaryHref } from "@/lib/game-data";
 import styles from "@/components/portal/PortalPages.module.css";
 
 const results = ["全部", "黑胜", "白胜", "进行中"];
@@ -11,7 +13,7 @@ const results = ["全部", "黑胜", "白胜", "进行中"];
 export function GamesClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialPlayer = searchParams.get("player")?.trim() ?? "";
+  const initialPlayer = normalizePlayerQuery(searchParams.get("player") ?? "");
   const initialBoard = ["9", "13", "19"].includes(searchParams.get("board") ?? "")
     ? (searchParams.get("board") ?? "全部")
     : "全部";
@@ -36,7 +38,7 @@ export function GamesClient() {
 
   function submitFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const player = playerQuery.trim();
+    const player = normalizePlayerQuery(playerQuery);
     setPlayerQuery(player);
     const query = new URLSearchParams();
     if (player) query.set("player", player);
@@ -58,6 +60,7 @@ export function GamesClient() {
             name="player"
             value={playerQuery}
             onChange={(event) => setPlayerQuery(event.target.value)}
+            maxLength={MAX_PLAYER_QUERY_LENGTH}
             placeholder="用户名"
           />
         </label>
@@ -113,11 +116,7 @@ export function GamesClient() {
                 <td>{game.spectators}</td>
                 <td>{game.finishedAt ?? "进行中"}</td>
                 <td>
-                  {game.result === "进行中" ? (
-                    <Link href={`/watch/${game.id}`}>观战</Link>
-                  ) : (
-                    <Link href={`/game-record/${game.id}`}>回放</Link>
-                  )}
+                  <Link href={getGameSummaryHref(game)}>{game.result === "进行中" ? "观战" : "回放"}</Link>
                 </td>
               </tr>
             ))}

@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { MAX_PLAYER_QUERY_LENGTH } from "@/lib/filters";
 import { GamesClient } from "./GamesClient";
 
 const routerMock = vi.hoisted(() => ({ replace: vi.fn() }));
@@ -27,5 +28,18 @@ describe("game archive filters", () => {
     fireEvent.submit(input.closest("form")!);
     expect(routerMock.replace).toHaveBeenCalledWith("/games?player=AKIRA");
     expect(input).toHaveValue("AKIRA");
+  });
+
+  it("bounds player queries before putting them into the page and URL", () => {
+    render(<GamesClient />);
+    const input = screen.getByRole("textbox", { name: "棋手：" });
+    fireEvent.change(input, { target: { value: `  ${"棋".repeat(80)}  ` } });
+    fireEvent.submit(input.closest("form")!);
+
+    expect(input).toHaveAttribute("maxLength", String(MAX_PLAYER_QUERY_LENGTH));
+    expect(input).toHaveValue("棋".repeat(MAX_PLAYER_QUERY_LENGTH));
+    expect(routerMock.replace).toHaveBeenCalledWith(
+      `/games?player=${encodeURIComponent("棋".repeat(MAX_PLAYER_QUERY_LENGTH))}`,
+    );
   });
 });

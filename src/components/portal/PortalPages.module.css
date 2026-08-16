@@ -5,6 +5,7 @@
 }
 .title {
   display: flex;
+  min-width: 0;
   height: 39px;
   align-items: center;
   padding: 0 12px;
@@ -17,8 +18,12 @@
   letter-spacing: 3px;
 }
 .title span {
+  min-width: 0;
+  overflow: hidden;
   margin-left: 18px;
   color: #60431f;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .tabs {
   display: flex;
@@ -206,11 +211,15 @@
 }
 .matchWindow > header {
   height: 35px;
+  overflow: hidden;
   padding: 7px 10px;
   background: linear-gradient(90deg, #000080 0 58%, #1084d0 100%);
   color: white;
   font-size: 17px;
   font-weight: 700;
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .matchContent {
   display: flex;

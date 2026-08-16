@@ -1,5 +1,11 @@
 import type { BoardSize, Player, PlayerStatus, Room, RoomStatus } from "@/types/site";
 
+export const MAX_PLAYER_QUERY_LENGTH = 20;
+
+export function normalizePlayerQuery(value: string) {
+  return value.trim().slice(0, MAX_PLAYER_QUERY_LENGTH);
+}
+
 export function filterPlayers(list: Player[], query: string, status: PlayerStatus | "全部") {
   const normalized = query.trim().toLocaleLowerCase("zh-CN");
   return list.filter((player) => {
